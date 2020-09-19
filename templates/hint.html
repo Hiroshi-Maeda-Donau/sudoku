@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <!--<link rel="stylesheet" href="{{ url_for('static', filename='style_hint.css') }}">-->
+       <title>Raspberry Pi</title>
+   </head>
+   <body bgcolor="#006600">
+       {% for i in range(9) %}
+           {% for j in range(9) %}
+               {% if (i<3 or i>5) and (j>2 and j<6) %}
+                   <table border="1" align="left" bordercolor="pink" width="8%" style="font-size:1pt; border-collapse:collapse;">
+               {% elif (i>2 and i<6) and (j<3 or j>5) %}
+                   <table border="1" align="left" bordercolor="pink" width="8%" style="font-size:1pt; border-collapse:collapse;">
+               {% else %}
+                   <table border="1" align="left" bordercolor="white" width="8%" style="font-size:1pt; border-collapse:collapse;">
+               {% endif %}
+               {% for k1 in range(3) %}
+                   <tr align="center">
+                   {% for k2 in range(3) %}
+                       {% if W3h[i,j,sfig[k1,k2]-1]==1 %}
+                           <td bgcolor="red"><font color=white>{{ sfig[k1,k2] }}</font></td>
+                       {% elif W4h[i,j,sfig[k1,k2]-1]==1 %}
+                           <td bgcolor="yellow"><font color=white>{{ sfig[k1,k2] }}</font></td>
+                       {% else %}
+                           <td ><font color=white>{{ sfig[k1,k2] }}</font></td>
+                       {% endif %}
+                   {% endfor %}
+                   </tr>
+               {% endfor %}
+               </table>
+           {% endfor %}
+           <br clear="all">
+       {% endfor %}
+
+
+   <!--単独不確定button -->
+       {% if flag_hint==1 %}
+       <button type="button" style="position: absolute; right: 20px; top: 50px; background-color:red" onclick="location.href='/sun'" ><font color=yellow>単独不確定</font></button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 20px; top: 50px;" onclick="location.href='/sun'" >単独不確定</button>
+       {% endif %}
+
+   <!--座席予約button -->
+       {% if flag_hint==2 %}
+       <button type="button" style="position: absolute; right: 20px; top: 90px; background-color:red;" onclick="location.href='/seat'" ><font color=yellow> 座席予約 </font></button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 20px; top: 90px;" onclick="location.href='/seat'" > 座席予約 </button>
+       {% endif %}
+
+   <!-- ◀︎ 矢印ボタン -->
+       <button type="button" style="position: absolute; right:100px; top:160px;" onclick="location.href='/h_left'"> ◀ ︎</button>
+   <!-- ▶︎ 矢印ボタン -->
+       <button type="button" style="position: absolute; right:20px; top:160px;" onclick="location.href='/h_right'"> ▶ ︎</button>
+   <!-- 指定コア数表示 -->
+       <div class="button" style="position: absolute; right: 70px; top:140px; background-color:transparent;"><font color=white><p>{{ flag_core }}</p></font></div>
+
+   <!--N国同盟（行）button -->
+       {% if flag_hint==3 %}
+       <button type="button" style="position: absolute; right: 20px; top: 200px; background-color:red;" onclick="location.href='/h_ali_row'" ><font color=yellow>N国同盟(行)</font></button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 20px; top: 200px;" onclick="location.href='/h_ali_row'" >N国同盟(行)</button>
+       {% endif %} 
+
+   <!--N国同盟（列）button -->
+       {% if flag_hint==4 %}
+       <button type="button" style="position: absolute; right: 20px; top: 240px; background-color:red;" onclick="location.href='/h_ali_col'" ><font color=yellow>N国同盟(列)</font></button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 20px; top: 240px;" onclick="location.href='/h_ali_col'" >N国同盟(列)</button>
+       {% endif %}   
+
+   <!--N国同盟（ブロック）button -->
+       {% if flag_hint==5 %}
+       <button type="button" style="position: absolute; right: 20px; top: 280px; background-color:red;" onclick="location.href='/h_ali_blk'" ><font color=yellow>N国同盟(blk)</font></button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 20px; top: 280px;" onclick="location.href='/h_ali_blk'" >N国同盟(blk)</button>
+       {% endif %}
+
+   <!--四辺形の定理（行）button -->
+       {% if flag_hint==6 %}
+       <button type="button" style="position: absolute; right: 110px; top: 320px; background-color:red;" onclick="location.href='/h_square_row'" ><font color=yellow>NXN(行)</font></button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 110px; top: 320px;" onclick="location.href='/h_square_row'" >NXN(行)</button> 
+       {% endif %}
+
+   <!--四辺形の定理（列）button -->
+       {% if flag_hint==7 %}
+       <button type="button" style="position: absolute; right: 30px; top: 320px; background-color:red;" onclick="location.href='/h_square_col'" ><font color=yellow>NXN(列)</font></button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 30px; top: 320px;" onclick="location.href='/h_square_col'" >NXN(列)</button>
+       {% endif %}
+
+   <!--強ループbutton -->
+       {% if flag_hint==8 %}
+       <button type="button" style="position: absolute; right: 110px; top: 360px; background-color:red;" onclick="location.href='/h_st_loop'" >強ループ</button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 110px; top: 360px;" onclick="location.href='/h_st_loop'" >強ループ</button>
+       {% endif %}
+
+   <!--弱ループbutton -->
+       {% if flag_hint==9 %}
+       <button type="button" style="position: absolute; right: 30px; top: 360px; background-color:red;" onclick="location.href='/h_wk_loop'" >弱ループ</button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 30px; top: 360px;" onclick="location.href='/h_wk_loop'" >弱ループ</button>
+       {% endif %}
+
+   <!--隠れ指定button -->
+       {% if flag_hidden==0 %}
+       <button type="button" style="position: absolute; right: 130px; top: 240px;" onclick="location.href='/h_hidden'" >隠れ</button>
+       {% else %}
+       <button type="button" style="position: absolute; right: 130px; top: 240px; background-color:red;" onclick="location.href='/h_hidden'" ><font color=yellow>隠れ</font></button>
+       {% endif %}
+
+  <!--ヒントクリアbutton -->
+       <button type="button" style="position: absolute; right: 120px; bottom: 20px;" onclick="location.href='/hintclr'" >ヒントクリア</button>
+
+   <!--元に戻るbutton -->
+       <button type="button" style="position: absolute; right: 20px; bottom: 20px;" onclick="location.href='/'" > 元に戻る！ </button>
+   <!-- ヒント（表示のみ） -->
+       <div class="box_css" style="position: absolute; right: 40px; top: 0px; background-color:transparent;"><font color=yellow><p>ヒント</p></font></div>
+   <!-- コア数N（表示のみ） -->
+       <div class="box_css" style="position: absolute; right: 40px; top: 110px; background-color:transparent;"><font color=pink><p>コア数N</p></font></div>
+  <!--▲（表示のみ） -->
+       <div class="box_css" style="position: absolute; right: 140px; top: 190px; background-color:transparent;"><font color=white><p>▲</p></font></div>
+  <!--▼（表示のみ） -->
+       <div class="box_css" style="position: absolute; right: 140px; top: 260px; background-color:transparent;"><font color=white><p>▼</p></font></div>
+
+
+   </body>
+</html>
+

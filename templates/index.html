@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+       <title>Raspberry Pi</title>
+   </head>
+   <body>
+       <h2><font color=yellow>数独システム</font></h2>
+       <table border="1" bordercolor="white" width="35%" style="border-collapse:collapse;">
+       {% for i in range(9) %}
+         <tr align="center">
+         {% for j in range(9) %}
+           {% if ((i<3 or i>5) and j>2 and j<6) or (i>2 and i<6 and (j<3 or j>5)) %}
+             {% if i==curx and j==cury %}
+               {% if WX[i,j]=="0" and WXtemp[i,j]=="0" %}
+                 <td bgcolor="red"><font color=red>0</font></td>
+               {% elif WXtemp[i,j]!="0" %}
+                 <td bgcolor="red">{{WXtemp[i,j]}}</td>
+               {% else %}
+                 <td bgcolor="red">{{WX[i,j]}}</td>
+               {% endif %}
+             {% elif WX[i,j]=="0" and WXtemp[i,j]!="0" %}
+               <td bgcolor="darkgreen">{{WXtemp[i,j]}}</td>
+             {% elif WX[i,j]=="0" and WXtemp[i,j]=="0" %}
+               <td bgcolor="darkgreen"><font color=darkgreen>{{WXtemp[i,j]}}</font></td>
+             {% else %}
+               <td bgcolor="darkgreen">{{WX[i,j]}}</td>
+             {% endif %}
+           {% else %}
+             {% if i==curx and j==cury %}
+               {% if WX[i,j]=="0" and WXtemp[i,j]=="0" %}
+                 <td bgcolor="red"><font color=red>0</font></td>
+               {% elif WXtemp[i,j]!="0" %}
+                 <td bgcolor="red">{{WXtemp[i,j]}}</td>
+               {% else %}
+                 <td bgcolor="red">{{WX[i,j]}}</td>
+               {% endif %}
+             {% elif WX[i,j]=="0" and WXtemp[i,j]!="0" %}
+               <td>{{WXtemp[i,j]}}</td>
+             {% elif WX[i,j]=="0" and WXtemp[i,j]=="0" %}
+               <td><font color=darkblue>{{WXtemp[i,j]}}</font></td>
+             {% else %}
+               <td>{{WX[i,j]}}</td>
+             {% endif %}
+           {% endif %}
+         {% endfor %}
+         </tr>
+       {% endfor %}
+       </table>
+       <br></br>
+       <a href="/start-squat" class="btn">カメラで撮影！</a>
+   </body>
+   <!-- cursol position -->
+   <button type="button" style="position: absolute; right: 50px; bottom: 100px" onclick="location.href='/c-right'">➡️</button>
+   <button type="button" style="position: absolute; right: 100px; bottom: 100px" onclick="location.href='/c-home'">HOME️</button> 
+   <button type="button" style="position: absolute; right: 170px; bottom: 100px" onclick="location.href='/c-left'">⬅️</button>
+   <button type="button" style="position: absolute; right: 110px; bottom: 140px" onclick="location.href='/c-up'">⬆️️</button>
+   <button type="button" style="position: absolute; right: 110px; bottom: 60px" onclick="location.href='/c-down'">⬇️️</button>
+   <!-- button 1,2,3 -->
+   <button type="button" style="position: absolute; right: 180px; top: 110px" onclick="location.href='/b-1'" >1️️</button>
+   <button type="button" style="position: absolute; right: 150px; top: 110px" onclick="location.href='/b-2'" >2</button>
+   <button type="button" style="position: absolute; right: 120px; top: 110px" onclick="location.href='/b-3'" >3</button>
+   <!-- button 4,5,6 -->
+   <button type="button" style="position: absolute; right: 180px; top: 150px" onclick="location.href='/b-4'" >4</button>
+   <button type="button" style="position: absolute; right: 150px; top: 150px" onclick="location.href='/b-5'" >5</button>
+   <button type="button" style="position: absolute; right: 120px; top: 150px" onclick="location.href='/b-6'" >6</button>
+   <!-- button 7,8,9 -->
+   <button type="button" style="position: absolute; right: 180px; top: 190px" onclick="location.href='/b-7'" >7</button>
+   <button type="button" style="position: absolute; right: 150px; top: 190px" onclick="location.href='/b-8'" >8</button>
+   <button type="button" style="position: absolute; right: 120px; top: 190px" onclick="location.href='/b-9'" >9</button>
+   <!-- space button -->
+   <button type="button" style="position: absolute; right: 140px; top: 230px" onclick="location.href='/b-space'" >SPACE</button>
+   <!-- all clear button -->
+   <button type="button" style="position: absolute; right: 120px; top: 50px" onclick="location.href='/b-all'" >ALL CLEAR</button>
+   <!-- message clear button -->
+   <button type="button" style="position: absolute; right: 100px; top: 270px" onclick="location.href='/b-mscrl'" >Message CLEAR</button>
+
+   <!-- 画像読み取り! button -->
+   <button type="button" style="position: absolute; left: 100px; top: 50px" onclick="location.href='/convocr'" >画像読み取り!</button>
+
+   <!-- 問題を解く! button -->
+   <button type="button" style="position: absolute; left: 100px; top: 100px" onclick="location.href='/solve'" >問題を解く!</button>
+
+   <!-- 問題を作る! button -->
+   <button type="button" style="position: absolute; left: 100px; top: 150px" onclick="location.href='/create'" >問題を作る!</button>
+
+   <!-- 問題を保存! button -->
+   <button type="button" style="position: absolute; left: 100px; top: 200px" onclick="location.href='/qsave'" >問題を保存!</button>
+
+   <!-- 問題を読む! button -->
+   <button type="button" style="position: absolute; left: 100px; top: 250px" onclick="location.href='/qload'" >問題を読む!</button>
+
+   <!-- ◀️ button -->
+   <button type="button" style="position: absolute; left: 50px; top: 300px" onclick="location.href='/qleft'" > ◀ ️</button>
+
+   <!-- ▶️ button -->
+   <button type="button" style="position: absolute; left: 200px; top: 300px" onclick="location.href='/qright'" > ▶︎ </button>
+
+   <!--ヒントbutton -->
+   <button type="button" style="position: absolute; right: 20px; top: 150px" onclick="location.href='/b-hint'" > ヒント！ </button>
+
+   <!-- 保存数・ポインタ表示 -->
+   <div class="button" style="position: absolute; left: 120px; top: 280px; background-color:transparent;"><font color=white><p>{{pointer}}</font></p></div>
+
+
+   <!-- メッセージボックス -->
+   <div class="box_css" style="position: absolute; right: 400px; top: 250px; background-color:transparent;"><font color=red><p>{{msg}}</p></font></div>
+
+
+
+</html>
+
