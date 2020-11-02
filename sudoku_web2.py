@@ -3,6 +3,7 @@
 #                               Rev.b  2020.7.11
 #                               Rev.c  2020.7.16  独立宣言-->座席予約
 #                               Rev.d  2020.8.2   rotate関数変更、chconv関数追加
+#                               Rev.e  2020.9.14  ALIMask関数-sub3関数バグ改善
 
 import numpy as np
 
@@ -261,6 +262,10 @@ def IndMask(W1):	# W1=CubeMask
                                 if bnumi==bnum:
                                     pass
                                 else:
+                                    print("ブロックにマスク")       #***************************
+                                    print("bnumi=",bnumi)   #****************************
+                                    print("bnum=",bnum)     #***************************
+                                    print("i1=",i1,"j1=",j1,"k=",k) #*******************
                                     for bi2 in range(3):
                                         for bj2 in range(3): 
                                             if bi2==bi:
@@ -273,6 +278,10 @@ def IndMask(W1):	# W1=CubeMask
                                 if bnumi==numi:
                                     pass
                                 else:
+                                    print("行にマスク")     #****************************
+                                    print("bnumi=",bnumi)   #****************************
+                                    print("numi=",numi)     #***************************
+                                    print("i1=",i1,"j1=",j1,"k=",k)      #*******************
                                     for r in range(9):
                                         if r==3*j1 or r==3*j1+1 or r==3*j1+2:
                                             W3[3*i1+bi,r,k]=1	# core nodes
@@ -348,7 +357,7 @@ def sub2(j1,n1,x1,x2,W3,W4,W5,W6,W7,W8,m2):
   ext1=0
 
   #print("x1=",x1,"  n1=",n1)	#****************************
-  for i1 in range(x1-n1+1):
+  for i1 in range(x1-n1+1):	#x1=cnti
     W3[1,0]=W4[i1]
     for i2 in range(i1+1,x1-n1+2):
       W3[1,1]=W4[i2]
@@ -402,12 +411,13 @@ def sub2(j1,n1,x1,x2,W3,W4,W5,W6,W7,W8,m2):
 
 # コア情報を決めてマスクする
 def sub3(j2,n2,cn1,cn2,WQ,WV,WR,WS,WT,WU,m3):	# n1:コアの大きさ　j2:j=列番号n2:n1=N=n  cn1:cnti   cn2:cntk 
-                                                # WQ:W3=CORE WV:W4=INUMi WR:W5=INUMk WS:W6=UFNR WT:W7=W1=CubeMask WU:W8=W2=CubeMaskTemp
+                                                # WQ:W3=CORE WV:W4=INUMi WR:W5=INUMk WS:W6=UFNR WT:W7=W1=CubeMask 
+                                                # WU:W8=W2=CubeMaskTemp
 
-  TP=np.zeros(shape=[n2+1,n2+1],dtype='int')		# コアのUFNと縦方向のUFNの数を記憶
+  TP=np.zeros(shape=[n2+1,n2+1],dtype='int')		# コアのUFNと縦方向・横方向のUFNの数を記憶
   ext2=0
 
-# COREを三次元に変換(Wcr2)
+# COREを三次元に変換(Wcr3)
   Wcr3=np.zeros(shape=[9,9,9],dtype='int')
   for i1 in range(n2):
     for k1 in range(n2):
@@ -420,8 +430,8 @@ def sub3(j2,n2,cn1,cn2,WQ,WV,WR,WS,WT,WU,m3):	# n1:コアの大きさ　j2:j=列
   for kx in range(n2):
     for ix in range(n2):
 
-      cni=WQ[1,ix]	#CORE
-      cnk=WQ[0,kx]	#CORE
+      cnk=WQ[0,kx]	# K方向CORE番号
+      cni=WQ[1,ix]      # i方向CORE番号
 
       #print("ix=",ix)	#************************
       #print("kx=",kx)	#************************
@@ -431,7 +441,7 @@ def sub3(j2,n2,cn1,cn2,WQ,WV,WR,WS,WT,WU,m3):	# n1:コアの大きさ　j2:j=列
       #print("cnk=",cnk)	#***********************
       #print("WQ(CORE)=",WQ)	#*********************
 
-      TP[ix,kx]=WT[cni,j2,cnk]
+      TP[ix,kx]=WT[cni,j2,cnk]	# WT=CubeMask TP=コア部分のみのUFN配列
 
   cnt2i=0               # TP配列のi方向の不確定ノードの数
   cnt2k=0                # TP配列のk方向の不確定ノードの数
@@ -446,7 +456,7 @@ def sub3(j2,n2,cn1,cn2,WQ,WV,WR,WS,WT,WU,m3):	# n1:コアの大きさ　j2:j=列
         cnt2k=cnt2k+1
 
     TP[ix,n2]=cnt2k
-    if cnt2k>=1:
+    if cnt2k>=2:
       numi=numi+1
 
   for kx in range(n2):
@@ -458,18 +468,19 @@ def sub3(j2,n2,cn1,cn2,WQ,WV,WR,WS,WT,WU,m3):	# n1:コアの大きさ　j2:j=列
 
     TP[n2,kx]=cnt2i
 
-    if cnt2i>=1:
+    if cnt2i>=2:
       numk=numk+1
 
-  if numi==n2 and numk==n2:
-
+  if numi==n2 and numk==n2:	# コア条件成立
+    #print("UFNR=")	#****************************
+    #print(WS)		#***************************
 
 # コアの各列にはコア以外にUFNはないか
-    numxx=0             # コア列のUFNと列全体のUFNの数が同じ列の数
+    numxx=0             # コア列のUFNの数と列全体のUFNの数が同じ列の数
     for kx2 in range(n2):
 
       xx2=TP[n2,kx2]
-      cnk=WQ[0,kx2]	# CORE
+      cnk=WQ[0,kx2]	# COREのk方向列番号
       xx3=WS[j2,cnk]	# UFNR（コア各列のUFNの数）
 
       if xx2==xx3:	# コア列のマスク条件合致
@@ -478,8 +489,8 @@ def sub3(j2,n2,cn1,cn2,WQ,WV,WR,WS,WT,WU,m3):	# n1:コアの大きさ　j2:j=列
 # 上の条件を満たせばマスクする
     if numxx==n2:	# マスク条件全て合致
 
-      for kx3 in range(cn2):
-        xxx=WV[kx3]		# INUMiのk方向kx3番目のカラム番号
+      for kx3 in range(cn2):	# cn2=cntk:UFNのあるカラム数
+        xxx=WR[kx3]		# INUMkのk方向kx3番目のカラム番号
 
 # xxxがコア列のどれかと一致しないかどうか調べる
         mtch=0
@@ -490,19 +501,33 @@ def sub3(j2,n2,cn1,cn2,WQ,WV,WR,WS,WT,WU,m3):	# n1:コアの大きさ　j2:j=列
             mtch=1
 
         if mtch==1:
+          #print("kx3=",kx3)     #************************************************
           pass
         else:   		# コア列ではない列のコア行のUFNにマスクをかける
+          print("kx3=",kx3)	#************************************************
           for ix3 in range(n2):
-            xyz=WQ[1,ix3]	# マスクする行（コアi方向）
-            ghi=WT[xyz,j2,xxx]
+            xyz=WQ[1,ix3]	# マスクする行（コアi方向,WQ=CORE）
+            ghi=WT[xyz,j2,xxx]	# CubeMaskを調べる
             if ghi==0:
-              WU[xyz,j2,xxx]=1
-
+              WU[xyz,j2,xxx]=1	# CubeMaskが"0"ならCubeMaskTempをセット
+              # print("WU=",WU)	#****************************
+              # print("numxx=",numxx)	#******************************************
               ext2=1
 
-          if ext2==1:
+      if ext2==1:
+            #print("CORE")	#**************************************
+            #print(WQ)		#*************************************
+            #print("CubeMaskTemp")	#****************************
+            #print(WU)		#************************************
+            #print("CubeMask")	#*************************************
+            #print(WT)		#*************************************
+            #print("cn2(UFNのある列の数)=",cn2)	#**************
+            #print("INUMk=")	#****************************************
+            #print(WR)		#**************************************
 
-              return ext2,Wcr3,WU
+        return ext2,Wcr3,WU
+
+  Wcr3=np.zeros(shape=[9,9,9],dtype='int')      # コア情報リセット
 
   return ext2,Wcr3,WU
 
@@ -538,6 +563,11 @@ def AliMask(N,W1,m1):
                     num1=num1+1
             UFNC[i,j]=num1
 
+    # print("UFNR")	#************************************
+    # print(UFNR)		#**********************
+    # print("CubeMask")	#****************************
+    # print(W1)		#************************************
+
 # ２．マスク作成段階
 
 # (1) コアを探してマスクする
@@ -563,10 +593,12 @@ def AliMask(N,W1,m1):
 # (2) cntk>=N+1およびcnti>=N ならNXNコアのマトリックスを作る
 
         if cntk>=N+1 and cnti>=N:	# k方向にマスクがある
+            #print("cntk=",cntk)		#*************************
+            #print("cnti=",cnti)		#*************************
 
-            for k1 in range(cnti-N+1):
+            for k1 in range(cntk-N+1):
                 CORE[0,0]=INUMk[k1]
-                for k2 in range(k1+1,cnti-N+2):
+                for k2 in range(k1+1,cntk-N+2):
                     CORE[0,1]=INUMk[k2]
                     if N==2:
                         ext,Wcr2,W2=sub2(j,N,cnti,cntk,CORE,INUMi,INUMk,UFNR,W1,W2,m1)
@@ -585,35 +617,35 @@ def AliMask(N,W1,m1):
                             #print(W1)	#***********************:
                             return ext,Wcr2,W2
                     else:
-                        for k3 in range(k2+1,cnti-N+3):
+                        for k3 in range(k2+1,cntk-N+3):
                             CORE[0,2]=INUMk[k3]
                             if N==3:
                                 ext,Wcr2,W2=sub2(j,N,cnti,cntk,CORE,INUMi,INUMk,UFNR,W1,W2,m1)
                                 if ext==1:
                                     return ext,Wcr2,W2
                             else:
-                                for k4 in range(k3+1,cnti-N+4):
+                                for k4 in range(k3+1,cntk-N+4):
                                     CORE[0,3]=INUMk[k4]
                                     if N==4:
                                         ext,Wcr2,W2=sub2(j,N,cnti,cntk,CORE,INUMi,INUMk,UFNR,W1,W2,m1)
                                         if ext==1:
                                             return ext,Wcr2,W2
                                     else:
-                                        for k5 in range(k4+1,cnti-N+5):
+                                        for k5 in range(k4+1,cntk-N+5):
                                             CORE[0,4]=INUMk[k5]
                                             if N==5:
                                                 ext,Wcr2,W2=sub2(j,N,cnti,cntk,CORE,INUMi,INUMk,UFNR,W1,W2,m1)
                                                 if ext==1:
                                                     return ext,Wcr2,W2
                                             else:
-                                                for k6 in range(k5+1,cnti-N+6):
+                                                for k6 in range(k5+1,cntk-N+6):
                                                     CORE[0,5]=INUMk[k6]
                                                     if N==6:
                                                         ext,Wcr2,W2=sub2(j,N,cnti,cntk,CORE,INUMi,INUMk,UFNR,W1,W2,m1)
                                                         if ext==1:
                                                             return ext,Wcr2,W2
                                                     else:
-                                                        for k7 in range(k6+1,cnti-N+7):
+                                                        for k7 in range(k6+1,cntk-N+7):
                                                             CORE[0,6]=INUMk[k7]
                                                             if N==7:
                                                                 ext,Wcr2,W2=sub2(j,N,cnti,cntk,CORE,INUMi,INUMk,UFNR,W1,W2,m1)
