@@ -22,9 +22,9 @@
                  <td bgcolor="red">{{WX[i,j]}}</td>
                {% endif %}
              {% elif WX[i,j]=="0" and WXtemp[i,j]!="0" %}
-               <td bgcolor="darkgreen">{{WXtemp[i,j]}}</td>
+               <td bgcolor="darkgreen"><font color=red>{{WXtemp[i,j]}}</font></td>
              {% elif WX[i,j]=="0" and WXtemp[i,j]=="0" %}
-               <td bgcolor="darkgreen"><font color=darkgreen>{{WXtemp[i,j]}}</font></td>
+               <td bgcolor="darkgreen"><font color=darkgreen>0</font></td>
              {% else %}
                <td bgcolor="darkgreen">{{WX[i,j]}}</td>
              {% endif %}
@@ -38,9 +38,9 @@
                  <td bgcolor="red">{{WX[i,j]}}</td>
                {% endif %}
              {% elif WX[i,j]=="0" and WXtemp[i,j]!="0" %}
-               <td>{{WXtemp[i,j]}}</td>
+               <td><font color=red>{{WXtemp[i,j]}}</font></td>
              {% elif WX[i,j]=="0" and WXtemp[i,j]=="0" %}
-               <td><font color=darkblue>{{WXtemp[i,j]}}</font></td>
+               <td><font color="darkblue">0</font></td>
              {% else %}
                <td>{{WX[i,j]}}</td>
              {% endif %}
@@ -49,6 +49,7 @@
          </tr>
        {% endfor %}
        </table>
+
        <br></br>
        <a href="/start-squat" class="btn">カメラで撮影！</a>
    </body>
@@ -102,13 +103,11 @@
    <button type="button" style="position: absolute; right: 20px; top: 150px" onclick="location.href='/b-hint'" > ヒント！ </button>
 
    <!-- 保存数・ポインタ表示 -->
-   <div class="button" style="position: absolute; left: 120px; top: 280px; background-color:transparent;"><font color=white><p>{{pointer}}</font></p></div>
+   <div class="button" style="position: absolute; left: 120px; top: 285px; background-color:transparent;"><font color=white><p>{{pointer}}</font></p></div>
 
 
    <!-- メッセージボックス -->
-   <div class="box_css" style="position: absolute; right: 400px; top: 250px; background-color:transparent;"><font color=red><p>{{msg}}</p></font></div>
-
-
+   <div class="box_css" style="position: absolute; left: 10px; top: 320px; width: 240px; background-color:transparent;"><font color=red size="2"><p>{{msg}}</p></font></div>
 
 </html>
 

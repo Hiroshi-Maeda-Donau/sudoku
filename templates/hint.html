@@ -19,10 +19,14 @@
                {% for k1 in range(3) %}
                    <tr align="center">
                    {% for k2 in range(3) %}
-                       {% if W3h[i,j,sfig[k1,k2]-1]==1 %}
+                       {% if W3h[i,j,sfig[k1,k2]-1]==1 and W2h[i,j,sfig[k1,k2]-1]==0 %}
                            <td bgcolor="red"><font color=white>{{ sfig[k1,k2] }}</font></td>
+                       {% elif W3h[i,j,sfig[k1,k2]-1]==1 and W2h[i,j,sfig[k1,k2]-1]==1 %}
+                           <td bgcolor="blue"><font color=white>{{ sfig[k1,k2] }}</font></td>
                        {% elif W4h[i,j,sfig[k1,k2]-1]==1 %}
-                           <td bgcolor="yellow"><font color=white>{{ sfig[k1,k2] }}</font></td>
+                           <td bgcolor="yellow"><font color=red>{{ sfig[k1,k2] }}</font></td>
+                       {% elif W1h[i,j,sfig[k1,k2]-1]==1 and W3h[i,j,sfig[k1,k2]-1]==0 %}
+                           <td bgcolor="lightgreen"><font color=red>{{ sfig[k1,k2] }}</font></td>
                        {% else %}
                            <td ><font color=white>{{ sfig[k1,k2] }}</font></td>
                        {% endif %}
@@ -112,11 +116,14 @@
        <button type="button" style="position: absolute; right: 130px; top: 240px; background-color:red;" onclick="location.href='/h_hidden'" ><font color=yellow>隠れ</font></button>
        {% endif %}
 
+  <!--ヒント適用button -->
+       <button type="button" style="position: absolute; right: 110px; top: 50px; background-color:yellow;" onclick="location.href='/h_apply'" >ヒント適用!</button>$
+
   <!--ヒントクリアbutton -->
-       <button type="button" style="position: absolute; right: 120px; bottom: 20px;" onclick="location.href='/hintclr'" >ヒントクリア</button>
+       <button type="button" style="position: absolute; right: 110px; bottom: 20px; background-color:yellow;" onclick="location.href='/hintclr'" >ヒントクリア！</button>
 
    <!--元に戻るbutton -->
-       <button type="button" style="position: absolute; right: 20px; bottom: 20px;" onclick="location.href='/'" > 元に戻る！ </button>
+       <button type="button" style="position: absolute; right: 20px; bottom: 20px; background-color:orange;" onclick="location.href='/'" > 元に戻る！</button>
    <!-- ヒント（表示のみ） -->
        <div class="box_css" style="position: absolute; right: 40px; top: 0px; background-color:transparent;"><font color=yellow><p>ヒント</p></font></div>
    <!-- コア数N（表示のみ） -->
