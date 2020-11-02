@@ -1,9 +1,12 @@
+# 2020.8.28 progressbarの設置(index.html)
+# 2020.9.8 def qload()変更
+# 2020.9.13 ヒント適用機能追加
+
 from flask import Flask, render_template, Response, redirect
 import numpy as np
 import time
 import cv2
 import numpy as np
-from matplotlib import pyplot as plt
 
 from convert_web import *	# 撮影した画像を9X9に分割
 from ocr_web import *		# 分割した画像を数字として読み取る
@@ -17,6 +20,20 @@ flag_hint=0
 flag_conv=1
 flag_hidden=0
 flag_core=2
+flag_apply=0			# ヒント適用フラグ
+flag_hint_before=0		# 一つ前のヒントフラグ
+
+# 三次元配列初期化
+W1h=np.zeros(shape=[9,9,9],dtype='int')     # CubeMaskTemp用
+W1h2=np.zeros(shape=[9,9,9],dtype='int')     # CubeMaskTemp用 予備
+W2h=np.zeros(shape=[9,9,9],dtype='int')     # 問題を三次元化した配列
+W3h=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列 CubeMask
+W3hx=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列回転後
+W3hy=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列 予備 
+W4h=np.zeros(shape=[9,9,9],dtype='int')     # コア配列　最終型
+W4h2=np.zeros(shape=[9,9,9],dtype='int')     # コア配列　予備
+Wcore=np.zeros(shape=[9,9,9],dtype='int')     # コア配列 原型
+Wmask=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列 原型
 
 ## Flaskサーバーの初期化
 
@@ -65,7 +82,7 @@ def msg_read():
     msg=lines[0]
     return msg
 
-# 問題の保存数読み込み
+# 問題の保村数読み込み
 def qnum():
     f=open("s_mondai.txt","r+")
     lines=f.readlines()
@@ -93,6 +110,12 @@ msg_update(msg)
 @app.route('/')
 def index():
     global flag_hint,cur
+    global flag_apply
+    global flag_hint_before
+
+    flag_apply=0	# ヒント適用リセット
+    flag_hint=0
+    flag_hint_before=0
 
     # 数独問題をファイルから読む
     Q=np.loadtxt('q_temp.txt')
@@ -198,7 +221,7 @@ def c_up():
     # ホーム画面に遷移させる
     return redirect('/')
 
-# /c-down にアクセスがあれば実行する
+# /c-downu にアクセスがあれば実行する
 @app.route('/c-down')
 def c_down():
     global cur
@@ -416,12 +439,16 @@ def qload():
 
         numx=qp_read()		# str
         numy=int(numx)
-        Qmon,Qans,mess=monread(numy)
+        if numy>0:
+            Qmon,Qans,mess=monread(numy)
 
-        np.savetxt('q_temp.txt',Qmon)
+            np.savetxt('q_temp.txt',Qmon)
 
-        Qzero=np.zeros(shape=[9,9],dtype='int')
-        np.savetxt('q_answer.txt',Qzero)
+            Qzero=np.zeros(shape=[9,9],dtype='int')
+            np.savetxt('q_answer.txt',Qzero)
+
+        else:
+            mess="問題が保存されていません!"
 
         msg_update(mess)
 
@@ -480,111 +507,166 @@ def b_hint():
     global flag_hint
     global flag_hidden
     global flag_core
+    global flag_apply
+    global W1h,W1h2,W2h,W3h,W3hx,W3hy,W4h,W4h2,Wcore,Wmask
+    global flag_hint_before
+
+    print("flag_apply=",flag_apply)	#*************************
+    print("flag_hint=",flag_hint)	#*************************
+    print("flag_hint_before=",flag_hint_before)	#****************
+    print("flag_hidden=",flag_hidden)	#**************************
+
     sfig=np.zeros(shape=[3,3],dtype='int')
     for i in range(3):
         for j in range(3):
             z=i*3+j+1
-            sfig[i,j]=z
+            sfig[i,j]=z		# １〜９の数字を３X3のマトリクスにセット
 
-    # 数独問題をファイルから読む
-    Q1h=np.loadtxt('q_temp.txt')
-    Q2h=np.mat(Q1h,dtype='int')
-    # 三次元配列初期化
-    W1h=np.zeros(shape=[9,9,9],dtype='int')	# CubeMaskTemp用
-    W2h=np.zeros(shape=[9,9,9],dtype='int')	# 問題を三次元化した配列
-    W3h=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列 CubeMask
-    W3hx=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列回転後
-    W3hy=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列 予備 
-    W4h=np.zeros(shape=[9,9,9],dtype='int')	# コア配列　最終型
-    W4h2=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列　予備
-    Wcore=np.zeros(shape=[9,9,9],dtype='int')     # コア配列 原型
-    # Q2を三次元化
-    dim3(Q2h,W2h)
-    # マスクの作成(W3h=CubeMask)
-    msk1(W2h,W3h)
+
+    # ヒント適用しない時、数独問題をファイルから読み各配列を初期化
+    if flag_hint==0:
+
+        # 三次元配列初期化
+        W1h=np.zeros(shape=[9,9,9],dtype='int')     # CubeMaskTemp用
+        W1h2=np.zeros(shape=[9,9,9],dtype='int')     # CubeMaskTemp用 予備
+        W2h=np.zeros(shape=[9,9,9],dtype='int')   # 問題を三次元化した配列
+        W3h=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列 CubeMask
+        W3hx=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列回転後
+        W3hy=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列 予備 
+        W4h=np.zeros(shape=[9,9,9],dtype='int')     # コア配列　最終型
+        W4h2=np.zeros(shape=[9,9,9],dtype='int')     # コア配列　予備
+        Wcore=np.zeros(shape=[9,9,9],dtype='int')     # コア配列 原型
+        Wmask=np.zeros(shape=[9,9,9],dtype='int')     # マスク配列 原型
+
+        Q1h=np.loadtxt('q_temp.txt')
+        Q2h=np.mat(Q1h,dtype='int')
+
+        # Q2hを三次元化
+        dim3(Q2h,W2h)
+
+        # マスクの作成(W3h=CubeMask)
+        msk1(W2h,W3h)
 
     if flag_hint==1:			# 単独未確定ノードを表示
-        msk2(W3h,W4h)
+        ext=msk2(W3h,W4h)
 
     if flag_hint==2:			# 座席予約のコアノードを表示
         flgind,W4h,W1h=IndMask(W3h)
+        print("flgind=",flgind)	#*****************************
+        print("W4h")	#**************************************
+        print(W4h)	#*************************************
 
     if flag_hint==3 and flag_hidden==0:	# N国同盟（行）
         W3hx=kcw(W3h)
+        W3hy=jcw(W3hx)
         mode="ALI-L"
-        ext,Wcore,W1h=AliMask(flag_core,W3hx,mode)
-        if ext==1:
-            W4h=kccw(Wcore)
+        ext,Wcore,Wmask=AliMask(flag_core,W3hy,mode)
+        #print("ext=",ext)	#****************************************
+        #if ext==1:
+        W4h2=jccw(Wcore)
+        W4h=kccw(W4h2)
+        W1h2=jccw(Wmask)
+        W1h=kccw(W1h2)
+        print("CORE")	#**************************************
+        print(W4h)		#**********************************
+        #print("W1h")	#**************************************
+        #print(W1h)		#*************************************
 
     if flag_hint==4 and flag_hidden==0:	# N国同盟（列）
         W3hx=jcw(W3h)
         mode="ALI-R"
-        ext,Wcore,W1h=AliMask(flag_core,W3hx,mode)
+        ext,Wcore,Wmask=AliMask(flag_core,W3hx,mode)
         if ext==1:
             W4h=jccw(Wcore)
+            W1h=jccw(Wmask)
 
     if flag_hint==5 and flag_hidden==0:	# N国同盟（ブロック）
         W3hx=c_to_b(W3h)
         W3hy=jcw(W3hx)
         mode="ALI-B"
-        ext,Wcore,W1h=AliMask(flag_core,W3hy,mode)
-        if ext==1:
-            W4h2=jccw(Wcore)
-            W4h=b_to_c(W4h2)
+        ext,Wcore,Wmask=AliMask(flag_core,W3hy,mode)
+        #if ext==1:
+        W4h2=jccw(Wcore)
+        W4h=b_to_c(W4h2)
+        W1h2=jccw(Wmask)
+        W1h=b_to_c(W1h2)
 
     if flag_hint==3 and flag_hidden==1:    # 隠れN国同盟（行）
         W3hx=kcw(W3h)
         mode="ALI-HL"
-        ext,Wcore,W1h=AliMask(flag_core,W3hx,mode)
-        if ext==1:
-            W4h=kccw(Wcore)
+        ext,Wcore,Wmask=AliMask(flag_core,W3hx,mode)
+        #if ext==1:
+        W4h=kccw(Wcore)
+        W1h=kccw(Wmask)
 
     if flag_hint==4 and flag_hidden==1:    # 隠れN国同盟（列）
         mode="ALI-HR"
-        ext,Wcore,W1h=AliMask(flag_core,W3h,mode)
-        if ext==1:
-            W4h=Wcore
+        ext,Wcore,Wmask=AliMask(flag_core,W3h,mode)
+        #if ext==1:
+        W4h=Wcore
+        W1h=Wmask
 
     if flag_hint==5 and flag_hidden==1:    # 隠れN国同盟（ブロック）
         W3hx=c_to_b(W3h)
         mode="ALI-HB"
-        ext,Wcore,W1h=AliMask(flag_core,W3hx,mode)
-        if ext==1:
-            W4h=b_to_c(Wcore)
+        ext,Wcore,Wmask=AliMask(flag_core,W3hx,mode)
+        #if ext==1:
+        W4h=b_to_c(Wcore)
+        W1h=b_to_c(Wmask)
 
     if flag_hint==6:	#四辺形の定理（行）
         W3hx=icw(W3h)
         mode="SQ-L"
-        ext,Wcore,W1h=AliMask(flag_core,W3hx,mode)
-        if ext==1:
-            W4h=iccw(Wcore)
+        ext,Wcore,Wmask=AliMask(flag_core,W3hx,mode)
+        #if ext==1:
+        W4h=iccw(Wcore)
+        W1h=iccw(Wmask)
 
     if flag_hint==7:    #四辺形の定理（列）
         W3hx=icw(W3h)
         W3hy=jcw(W3hx)
         mode="SQ-R"
-        ext,Wcore,W1h=AliMask(flag_core,W3hy,mode)
-        if ext==1:
-            W4h2=jccw(Wcore)
-            W4h=iccw(W4h2)
+        ext,Wcore,Wmask=AliMask(flag_core,W3hy,mode)
+        #if ext==1:
+        W4h2=jccw(Wcore)
+        W4h=iccw(W4h2)
+        W1h2=jccw(Wmask)
+        W1h=iccw(W1h2)
 
     if flag_hint==8:	#強ループ
         mode="ST-LOOP"
         ctrl="1"
-        ext,ext2,W1h,Wcore=ChnMaskSt(ctrl,W3h)
-        if ext==1:
-            W4h=chconv(ext2,Wcore)
+        ext,ext2,Wmask,Wcore=ChnMaskSt(ctrl,W3h)
+        #if ext==1:
+        W4h=chconv(ext2,Wcore)
+        W1h=Wmask
 
     if flag_hint==9:	#弱ループ
         mode="WK-LOOP"
         ctrl="1"
-        ext,ext2,W1h,Wcore=ChnMaskWk(ctrl,W3h)
-        if ext==1:
-            W4h=chconv(ext2,Wcore)
+        ext,ext2,Wmask,Wcore=ChnMaskWk(ctrl,W3h)
+        #if ext==1:
+        W4h=chconv(ext2,Wcore)
+        W1h=Wmask
 
+    if flag_apply==1 and flag_hint==flag_hint_before and flag_hint>0:	# ヒント適用処理
+        ext2=merge(W3h,W1h)
+        #W4h=np.zeros(shape=[9,9,9],dtype='int')     # コア配列　最終型
+        flag_apply=0
+
+    flag_hint_before=flag_hint
 
  # クライアントに hint.html を返す
-    return render_template('hint.html',sfig=sfig,W3h=W3h,W4h=W4h,flag_hint=flag_hint,flag_core=flag_core,flag_hidden=flag_hidden)
+    return render_template('hint.html',sfig=sfig,W1h=W1h,W2h=W2h,W3h=W3h,W4h=W4h,flag_hint=flag_hint,flag_core=flag_core,flag_hidden=flag_hidden)
+
+# /h_applyにアクセスがあれば実行する
+@app.route('/h_apply')
+def h_apply():
+    global flag_apply
+    flag_apply=1
+
+    # ヒント画面に遷移させる
+    return redirect('/b-hint')
 
 # /sun にアクセスがあれば実行する
 @app.route('/sun')
@@ -693,7 +775,9 @@ def h_right():
 @app.route('/hintclr')
 def hintclr():
     global flag_hint
+    global flag_apply
     flag_hint=0
+    flag_apply=0
     # ヒント画面に遷移させる
     return redirect('/b-hint')
 
