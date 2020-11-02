@@ -71,8 +71,8 @@ pip3 install  flask pyocr
 `git clone`コマンドで数独システムをダウンロードします。
 
 ```shell
-git clone https://github.com/Hiroshi-Maeda-Donau/Donauhiro.git
-cd Donauhiro/
+git clone https://github.com/Hiroshi-Maeda-Donau/sudoku.git
+cd sudoku/
 ```
 
 数独システムを起動します。
@@ -88,10 +88,11 @@ python3 server.py
 装置の組み立て方や数独システムの使い方など、詳しい情報はこちらを確認してください。
 
 - [装置のセットアップ](./docs/setup.md)
-- [システムの使い方](./docs/usage.md)
+- [システムの使い方1](./docs/usage.md)
+- [システムの使い方2](./docs/usage2.md)
 - [自動起動の設定](./docs/automation.md)
 - [開発情報](./docs/development.md)
-- [数独システムのアルゴリズム](./docs/algorithm.docx)
+- [数独システムのアルゴリズム](./docs/algorithm.md)
 
 ## その他
 
