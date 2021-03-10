@@ -50,7 +50,7 @@
        {% endfor %}
        </table>
 
-       <br></br>
+       <h5>カラム数：{{qmin}}</h5>
        <a href="/start-squat" class="btn">カメラで撮影！</a>
    </body>
    <!-- cursol position -->
@@ -61,18 +61,18 @@
    <button type="button" style="position: absolute; right: 110px; bottom: 60px" onclick="location.href='/c-down'">⬇️️</button>
    <!-- button 1,2,3 -->
    <button type="button" style="position: absolute; right: 180px; top: 110px" onclick="location.href='/b-1'" >1️️</button>
-   <button type="button" style="position: absolute; right: 150px; top: 110px" onclick="location.href='/b-2'" >2</button>
-   <button type="button" style="position: absolute; right: 120px; top: 110px" onclick="location.href='/b-3'" >3</button>
+   <button type="button" style="position: absolute; right: 130px; top: 110px" onclick="location.href='/b-2'" >2</button>
+   <button type="button" style="position: absolute; right: 80px; top: 110px" onclick="location.href='/b-3'" >3</button>
    <!-- button 4,5,6 -->
    <button type="button" style="position: absolute; right: 180px; top: 150px" onclick="location.href='/b-4'" >4</button>
-   <button type="button" style="position: absolute; right: 150px; top: 150px" onclick="location.href='/b-5'" >5</button>
-   <button type="button" style="position: absolute; right: 120px; top: 150px" onclick="location.href='/b-6'" >6</button>
+   <button type="button" style="position: absolute; right: 130px; top: 150px" onclick="location.href='/b-5'" >5</button>
+   <button type="button" style="position: absolute; right: 80px; top: 150px" onclick="location.href='/b-6'" >6</button>
    <!-- button 7,8,9 -->
    <button type="button" style="position: absolute; right: 180px; top: 190px" onclick="location.href='/b-7'" >7</button>
-   <button type="button" style="position: absolute; right: 150px; top: 190px" onclick="location.href='/b-8'" >8</button>
-   <button type="button" style="position: absolute; right: 120px; top: 190px" onclick="location.href='/b-9'" >9</button>
+   <button type="button" style="position: absolute; right: 130px; top: 190px" onclick="location.href='/b-8'" >8</button>
+   <button type="button" style="position: absolute; right: 80px; top: 190px" onclick="location.href='/b-9'" >9</button>
    <!-- space button -->
-   <button type="button" style="position: absolute; right: 140px; top: 230px" onclick="location.href='/b-space'" >SPACE</button>
+   <button type="button" style="position: absolute; right: 110px; top: 230px" onclick="location.href='/b-space'" >SPACE</button>
    <!-- all clear button -->
    <button type="button" style="position: absolute; right: 120px; top: 50px" onclick="location.href='/b-all'" >ALL CLEAR</button>
    <!-- message clear button -->
@@ -82,16 +82,19 @@
    <button type="button" style="position: absolute; left: 100px; top: 50px" onclick="location.href='/convocr'" >画像読み取り!</button>
 
    <!-- 問題を解く! button -->
-   <button type="button" style="position: absolute; left: 100px; top: 100px" onclick="location.href='/solve'" >問題を解く!</button>
+   <button type="button" style="position: absolute; left: 50px; top: 100px" onclick="location.href='/solve'" >問題を解く!</button>
 
    <!-- 問題を作る! button -->
-   <button type="button" style="position: absolute; left: 100px; top: 150px" onclick="location.href='/create'" >問題を作る!</button>
+   <button type="button" style="position: absolute; left: 150px; top: 100px; background-color:orange;" onclick="location.href='/create'" >問題を作る!</button>
 
-   <!-- 問題を保存! button -->
-   <button type="button" style="position: absolute; left: 100px; top: 200px" onclick="location.href='/qsave'" >問題を保存!</button>
+   <!-- 問題を追加保存! button -->
+   <button type="button" style="position: absolute; left: 50px; top: 175px" onclick="location.href='/qsave_add'" >追加保存!</button>
 
-   <!-- 問題を読む! button -->
-   <button type="button" style="position: absolute; left: 100px; top: 250px" onclick="location.href='/qload'" >問題を読む!</button>
+  <!-- 問題を上書き保存! button -->
+   <button type="button" style="position: absolute; left: 150px; top: 175px" onclick="location.href='/qsave_ovw'" >上書き保存!</button>
+
+   <!-- 保存問題を読む! button -->
+   <button type="button" style="position: absolute; left: 50px; top: 250px" onclick="location.href='/qload'" >保存問題を読む!</button>
 
    <!-- ◀️ button -->
    <button type="button" style="position: absolute; left: 50px; top: 300px" onclick="location.href='/qleft'" > ◀ ️</button>
@@ -100,14 +103,19 @@
    <button type="button" style="position: absolute; left: 200px; top: 300px" onclick="location.href='/qright'" > ▶︎ </button>
 
    <!--ヒントbutton -->
-   <button type="button" style="position: absolute; right: 20px; top: 150px" onclick="location.href='/b-hint'" > ヒント！ </button>
+   <button type="button" style="position: absolute; right: 20px; top: 50px; background-color:orange;" onclick="location.href='/b-hint'" > ヒント！ </button>
+
+   <!--表示切り替え（問題/答)button -->
+   <button type="button" style="position: absolute; left: 180px; top: 250px" onclick="location.href='/cind'" >表示切替!</button>
 
    <!-- 保存数・ポインタ表示 -->
-   <div class="button" style="position: absolute; left: 120px; top: 285px; background-color:transparent;"><font color=white><p>{{pointer}}</font></p></div>
-
+   <div class="button" style="position: absolute; left: 120px; top: 285px; background-color:transparent;"><font color=white size="4"><p>{{pointer}}</font></p></div>
 
    <!-- メッセージボックス -->
-   <div class="box_css" style="position: absolute; left: 10px; top: 320px; width: 240px; background-color:transparent;"><font color=red size="2"><p>{{msg}}</p></font></div>
+   <div class="box_css" style="position: absolute; left: 10px; top: 320px; width: 240px; background-color:transparent; font-size: "><font color=red size="2"><p>{{msg}}</p></font></div>
+
+  <!-- 作成時間 -->
+   <div class="box_css" style="position: absolute; left: 10px; bottom: 0px; width: 240px; background-color:transparent;"><font color="white" size="3"><p>{{crtime}}</p></font></div>
 
 </html>
 

@@ -1,6 +1,8 @@
 # 2020.8.28 progressbarの設置(index.html)
 # 2020.9.8 def qload()変更
 # 2020.9.13 ヒント適用機能追加
+# 2021.1.30 問題作成フロー更新その他
+# prog.html追加と関連変更
 
 from flask import Flask, render_template, Response, redirect
 import numpy as np
@@ -11,8 +13,8 @@ import numpy as np
 from convert_web import *	# 撮影した画像を9X9に分割
 from ocr_web import *		# 分割した画像を数字として読み取る
 from s_access2 import *		# 保存した数独問題の読み書き
-from sudoku_web2 import *	# 数独問題を解く
-from s_create_web2 import *	# 数独問題を作る
+from sudoku_web4 import *	# 数独問題を解く
+from s_create_web5 import *	# 数独問題を作る
 
 #グローバル変数
 
@@ -22,6 +24,10 @@ flag_hidden=0
 flag_core=2
 flag_apply=0			# ヒント適用フラグ
 flag_hint_before=0		# 一つ前のヒントフラグ
+lvnum=1				#問題作成レベル
+flag_ind=0			# 0=解答は表示しない、1=表示する
+crtime="作成所要時間=0:00:00"	# 問題作成所要時間"
+qmin=0				# 問題カラム数
 
 # 三次元配列初期化
 W1h=np.zeros(shape=[9,9,9],dtype='int')     # CubeMaskTemp用
@@ -112,6 +118,10 @@ def index():
     global flag_hint,cur
     global flag_apply
     global flag_hint_before
+    # global lvnum
+    global flag_ind
+    global crtime
+    global qmin
 
     flag_apply=0	# ヒント適用リセット
     flag_hint=0
@@ -121,7 +131,12 @@ def index():
     Q=np.loadtxt('q_temp.txt')
     Qtemp=np.loadtxt('q_answer.txt')
     W=np.mat(Q,dtype='int')
-    Wtemp=np.mat(Qtemp,dtype='int')
+
+    if flag_ind==1:
+        Wtemp=np.mat(Qtemp,dtype='int')
+    else:
+        Wtemp=np.zeros(shape=[9,9],dtype='int')
+
     WX=np.mat(W,dtype='str')
     WXtemp=np.mat(Wtemp,dtype='str')
     # カーソルポインタ
@@ -133,8 +148,21 @@ def index():
     qfig=qnum()
     qptr=qp_read()
     pointer=qptr+"/"+qfig
+    # 作成問題のレベル指定
+    # qlvl="level-"+str(lvnum)
+
+    xyz=0
+    for i in range(9):
+        for j in range(9):
+            qqq=W[i,j]
+            if qqq>0:
+                xyz=xyz+1
+
+    qmin=xyz
+
+
     # クライアントに index.html を返す
-    return render_template('index.html',msg=msg,pointer=pointer,WX=WX,WXtemp=WXtemp,cur=cur,curx=curx,cury=cury)
+    return render_template('index.html',qmin=qmin,msg=msg,pointer=pointer,WX=WX,WXtemp=WXtemp,cur=cur,curx=curx,cury=cury,crtime=crtime)
 
 # /start-squat にアクセスがあれば実行する
 @app.route('/start-squat')
@@ -193,6 +221,19 @@ def camera():
     # クライアントにMotion JPEGを配信
     return Response(gen(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+# 画面表示切り替え
+@app.route('/cind')
+def cind():
+    global flag_ind
+    if flag_ind==0:
+        flag_ind=1
+    else:
+        flag_ind=0
+
+    return redirect('/')
+
+
 
 # /c-right にアクセスがあれば実行する
 @app.route('/c-right')
@@ -382,7 +423,7 @@ def solve():
         Q=np.loadtxt('q_temp.txt')
         W=np.mat(Q,dtype='int')
 
-        x1,msg,Qans=s_web_main(7,W)	# import sudoku_web2.py
+        x1,res_lvl,msg,Qans=s_web_main(7,W)	# q_answer.txtに答えを保存
 
         msg_update(msg)
         flag_conv=1
@@ -393,32 +434,89 @@ def solve():
 @app.route('/create')
 def create():
     global flag_conv
+    global lvnum	# level number
     #flg=flag_read()     #汎用フラッグ
-    print("flag_conv=",flag_conv)	#***************************
+    #print("flag_conv=",flag_conv)	#***************************
 
+    #flag_conv=1
     if flag_conv==1:
         flag_conv=0        # 二度押しできないようにする
-        Qtemp,Qans,msg=s_create_main2() # import s_create_web2.py
+        #Qtemp,Qans,msg=s_create_main(lvnum) # import s_create_web2.py
+
+        #np.savetxt('q_temp.txt',Qtemp)
+        #Qzero=np.zeros(shape=[9,9],dtype='int')
+        #np.savetxt('q_answer.txt',Qans)
+        #msg_update(msg)
+        flag_conv=1
+
+    qlv=str(lvnum)
+    #clvl="作成レベル："+str(lvnum)
+    # 作成画面に遷移させる
+    return render_template('prog.html',qlv=qlv)
+
+# /cstart（作成開始!) にアクセスがあれば実行する
+@app.route('/cstart')
+def cstart():
+    global flag_conv
+    global lvnum        # level number
+    global crtime
+    global qmin
+    #flg=flag_read()     #汎用フラッグ
+    #print("flag_conv=",flag_conv)      #***************************
+
+    #flag_conv=1
+    if flag_conv==1:
+        flag_conv=0        # 二度押しできないようにする
+        lv2=lvnum
+        print(lv2)	#*******************************
+        Qtemp,qmin,Qans,msg,dt3=s_create_main(lvnum,lv2)
 
         np.savetxt('q_temp.txt',Qtemp)
         Qzero=np.zeros(shape=[9,9],dtype='int')
-        np.savetxt('q_answer.txt',Qzero)
+        np.savetxt('q_answer.txt',Qans)
         msg_update(msg)
         flag_conv=1
+        mn=str(dt3)
+        crtime="作成所要時間="+mn[0:7]
 
-    # ホーム画面に遷移させる
+    # index.html画面に遷移させる
     return redirect('/')
 
-# /qsave（問題を保存!) にアクセスがあれば実行する
-@app.route('/qsave')
-def qsave():
+# /lvleftにアクセスがあれば実行する
+@app.route('/lvleft')
+def lvleft():
+    global lvnum
+
+    if lvnum>1:
+        lvnum=lvnum-1
+
+    qlv=str(lvnum)
+    # 問題作成画面に遷移させる
+    print("qlv=",qlv)	#*****************************
+    return render_template('prog.html',qlv=qlv)
+
+# /lvrightにアクセスがあれば実行する
+@app.route('/lvright')
+def lvright():
+    global lvnum
+
+    if lvnum<4:
+        lvnum=lvnum+1
+
+    qlv=str(lvnum)
+    print("qlv=",qlv)   #*****************************
+    # 問題作成画面に遷移させる
+    return render_template('prog.html',qlv=qlv)
+
+# /qsave_add(追加保存!) にアクセスがあれば実行する
+@app.route('/qsave_add')
+def qsave_add():
+    print("qsave start!")	#************************************
     global flag_conv
     if flag_conv==1:
         flag_conv=0        # 二度押しできないようにする
 
-        Q=np.loadtxt('q_temp.txt')
-        W=np.mat(Q,dtype='int')
-        msg=monwrite(W)
+        msg=monwrite()
         msg_update(msg)
 
         # 問題番号の初期化（最後の番号）
@@ -429,6 +527,27 @@ def qsave():
 
     # ホーム画面に遷移させる
     return redirect('/')
+
+# /qsave_ovw(上書保存!) にアクセスがあれば実行する
+@app.route('/qsave_ovw')
+def qsave_ovw():
+    print("qsave start!")       #************************************
+    global flag_conv
+    if flag_conv==1:
+        flag_conv=0        # 二度押しできないようにする
+
+        msg=monovw()
+        msg_update(msg)
+
+        # 問題番号の初期化（最後の番号）
+        #qptr=qnum()
+        #qp_update(qptr)
+
+        flag_conv=1
+
+    # ホーム画面に遷移させる
+    return redirect('/')
+
 
 # /qload（問題を読む!) にアクセスがあれば実行する
 @app.route('/qload')
@@ -444,8 +563,8 @@ def qload():
 
             np.savetxt('q_temp.txt',Qmon)
 
-            Qzero=np.zeros(shape=[9,9],dtype='int')
-            np.savetxt('q_answer.txt',Qzero)
+            #Qzero=np.zeros(shape=[9,9],dtype='int')
+            np.savetxt('q_answer.txt',Qans)
 
         else:
             mess="問題が保存されていません!"
@@ -542,19 +661,19 @@ def b_hint():
         Q2h=np.mat(Q1h,dtype='int')
 
         # Q2hを三次元化
-        dim3(Q2h,W2h)
+        W2h=dim3(Q2h)
 
         # マスクの作成(W3h=CubeMask)
-        msk1(W2h,W3h)
+        W3h=msk1(W2h)
 
     if flag_hint==1:			# 単独未確定ノードを表示
-        ext=msk2(W3h,W4h)
+        ext,W4h=msk2(W3h)
 
     if flag_hint==2:			# 座席予約のコアノードを表示
         flgind,W4h,W1h=IndMask(W3h)
-        print("flgind=",flgind)	#*****************************
-        print("W4h")	#**************************************
-        print(W4h)	#*************************************
+        #print("flgind=",flgind)	#*****************************
+        #print("W4h")	#**************************************
+        #print(W4h)	#*************************************
 
     if flag_hint==3 and flag_hidden==0:	# N国同盟（行）
         W3hx=kcw(W3h)
@@ -567,8 +686,8 @@ def b_hint():
         W4h=kccw(W4h2)
         W1h2=jccw(Wmask)
         W1h=kccw(W1h2)
-        print("CORE")	#**************************************
-        print(W4h)		#**********************************
+        #print("CORE")	#**************************************
+        #print(W4h)		#**********************************
         #print("W1h")	#**************************************
         #print(W1h)		#*************************************
 

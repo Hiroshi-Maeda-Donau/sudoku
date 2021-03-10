@@ -6,10 +6,10 @@
 - ocr_web.py　　   　　　81個に分割した画像をデジタル化する
  (上記四つのコードはネットからコピペして私なりに改造したものです。)
 - s_access2.py　　　　 カメラで読んだり手入力した数独問題を保存するコード
-- s_ceate_web2.py　　　数独問題を発生させるコード
-- sudoku_web2.py　　　数独問題を解くコード
+- s_ceate_web5.py　　　数独問題を発生させるコード
+- sudoku_web4.py　　　数独問題を解くコード
 - server.py　　　　　　サーバー全体をコントロール
-- s_mondai.txt　　　　　数独問題を保存するファイル
+- s_mondai.txt　　　　　数独問題を保存するファイル  
 ### 2. "templates"ディレクトリの下に置くファイル
 - index.html　　　　　メイン画面
 - squat.html　　　　　カメラ撮影を行う画面

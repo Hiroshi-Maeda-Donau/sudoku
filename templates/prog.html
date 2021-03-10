@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title>Raspberry Pi</title>
+   </head>
+   <body bgcolor="#006600">
+
+      <h1 style="position: absolute; left: 150px"><font color="yellow">数独問題を作る-設定</font></h1>
+      <br>
+      <br>
+      <br>      
+      <h3 style="position: absolute; left: 200px"; top: 100px"><font color="white">作成する問題のレベル</font></h3>
+
+      <!-- 問題作成レベル表示 -->
+      <h3 style="position: absolute; left: 260px; top: 130px; font-size: 16pt "><font color="white">{{qlv}}</font></h3>
+
+      <!-- プログレスバー表示準備 -->
+      <div id="indprg"></div>
+
+      <!-- ◀️ button 2 -->
+      <button type="button" style="position: absolute; left: 200px; top: 150px; font-size: 12pt" onclick="location.href='/lvleft'" > ◀ ️</button>
+
+      <!-- ▶️ button 2 -->
+      <button type="button" style="position: absolute; left: 300px; top: 150px; font-size: 12pt" onclick="location.href='/lvright'" > ▶︎ </button>
+
+       <!--元に戻るbutton -->
+      <div id="rethome">
+       <input type="button" style="position: absolute; right: 20px; bottom: 20px; background-color:orange;" value="元に戻る" onclick="location.href='/'" >
+      </div>  
+
+       <!--作成開始button -->
+       <input type="button" style="position: absolute; left: 200px; top: 250px; font-size: 12pt; background-color:red; " value="作成開始！" onclick="progbarInd()" >
+
+       <script>
+           function progbarInd(){
+               var retHm=document.getElementById("rethome");
+               var pDiv=document.getElementById("indprg");
+               retHm.innerHTML="<div></div>"
+               pDiv.innerHTML="<progress  style='position: absolute; left: 200px; top: 300px;'>0%</progress>";
+               window.location.href='/cstart'
+           }
+       </script>
+ 
+   </body>
+</html>
+

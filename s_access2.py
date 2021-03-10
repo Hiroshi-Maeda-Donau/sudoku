@@ -1,43 +1,64 @@
 # 2020.7.11 s_access2.py
+# 2021.1.30 問題を解くルーチン削除
+
 import numpy as np
 from sudoku_web2 import *
 
-# 問題をs_mondai.txtに書き込み
-def monwrite(QX):
+# 問題をs_mondai.txtに追加書き込み
+def monwrite():
 
-    Qh=np.zeros(shape=[9,9],dtype='int')
+   # 数独問題をファイルから読む
+    Q=np.loadtxt('q_temp.txt')
+    Qtemp=np.loadtxt('q_answer.txt')
+    W=np.mat(Q,dtype='int')
+    Wtemp=np.mat(Qtemp,dtype='int')
 
-    #QX避難
-    for i1 in range(9):
-        for j1 in range(9):
-            Qh[i1,j1]=QX[i1,j1]
+    # 問題と解答を比較
+    flag_compare=1
+    for i in range(9):
+        for j in range(9):
+            x1=W[i,j]
+            x2=Wtemp[i,j]
+            if x1>0 and x1!=x2:
+                flag_compare=0
 
-    lv=7
-    numx,mess,Q4=s_web_main(lv,QX)
+    Qmondai=np.mat(W,dtype='str')
 
-    QX=Qh
+    if flag_compare==0:
+        Qans_tmp=np.zeros(shape=[9,9],dtype='int')
+        Qans=np.mat(Qans_tmp,dtype='str')
+    else:
+        Qans=np.mat(Wtemp,dtype='str')
 
-    # QX(9X9)を１行のテキストに変換
+
+    # Qmondai(9X9)を１行のテキストに変換
     a1=""
     for x1 in range(9):
         for y1 in range(9):
-            a1=a1+str(QX[x1,y1])
+            a1=a1+str(Qmondai[x1,y1])
 
-    # Q4(9X9)を１行のテキストに変換
+    # Qans(9X9)を１行のテキストに変換
     a2=""
     for x1 in range(9):
         for y1 in range(9):
-            a2=a2+str(Q4[x1,y1])
+            a2=a2+str(Qans[x1,y1])
 
     # message
+    mess=""
+    if flag_compare==1:
+        f=open("message.txt","r")
+        lines=f.readlines()
+        f.close()
+        mess=lines[0]
+    else:
+        mess="no answer"
+
     a3=mess
 
     # s_mondaiを読んで更新
     f=open("s_mondai.txt","r+")
     lines=f.readlines()
     f.close()
-
-    #print("lines[0]=",lines[0])
 
     numx=lines[0]
 
@@ -51,13 +72,9 @@ def monwrite(QX):
 
     lines[0]=numz+"\n"
 
-    #print("lines[0]=",lines[0])
-    #print("lines=",lines)
-
     f=open("s_mondai.txt","w+")
     f.writelines(lines)
     f.close
-    
 
     # 問題、答え、メッセージを保存
     f=open("s_mondai.txt","a")
@@ -67,6 +84,87 @@ def monwrite(QX):
     f.write("\n")
     f.write(a3)
     f.write("\n")
+    f.close()
+
+    return mess
+
+# 問題をs_mondai.txtに上書き
+def monovw():
+
+   # 数独問題をファイルから読む
+    Q=np.loadtxt('q_temp.txt')
+    Qtemp=np.loadtxt('q_answer.txt')
+    W=np.mat(Q,dtype='int')
+    Wtemp=np.mat(Qtemp,dtype='int')
+
+
+    # 問題と解答を比較
+    flag_compare=1
+    for i in range(9):
+        for j in range(9):
+            x1=W[i,j]
+            x2=Wtemp[i,j]
+            if x1>0 and x1!=x2:
+                flag_compare=0
+
+    Qmondai=np.mat(W,dtype='str')
+
+    if flag_compare==0:
+        Qans_tmp=np.zeros(shape=[9,9],dtype='int')
+        Qans=np.mat(Qans_tmp,dtype='str')
+    else:
+        Qans=np.mat(Wtemp,dtype='str')
+
+
+    # Qmondai(9X9)を１行のテキストに変換
+    a1=""
+    for x1 in range(9):
+        for y1 in range(9):
+            a1=a1+str(Qmondai[x1,y1])
+
+    # Qans(9X9)を１行のテキストに変換
+    a2=""
+    for x1 in range(9):
+        for y1 in range(9):
+            a2=a2+str(Qans[x1,y1])
+
+    # message
+    mess=""
+    if flag_compare==1:
+        f=open("message.txt","r")
+        lines=f.readlines()
+        f.close()
+        mess=lines[0]
+    else:
+        mess="no answer"
+
+    a3=mess
+
+    # s_mondaiを読んで更新
+
+    f=open("qptr.txt","r+")
+    lines=f.readlines()
+    f.close()
+
+    numx=lines[0]
+    numy=int(numx)
+    numz=str(numy)
+
+    lx1=3*(numy-1)+1
+    lx2=3*(numy-1)+2
+    lx3=3*(numy-1)+3
+
+    f=open("s_mondai.txt","r+")
+    lines=f.readlines()
+    f.close()
+
+    lines[lx1]=a1+"\n"
+    lines[lx2]=a2+"\n"
+    lines[lx3]=a3+"\n"
+
+    #s_mondai.tstを書き換え
+    f=open("s_mondai.txt","w")
+    lines=f.writelines(lines)
     f.close()
 
     return mess
