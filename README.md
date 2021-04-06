@@ -33,7 +33,7 @@ sudo apt-get update
 OCR用のソフトウェアをインストールします。
 
 ```shell
-sudo apt-get -y install tesseract
+sudo apt-get -y install tesseract-ocr
 ```
 
 OpenCVの依存ライブラリをインストールします。
@@ -63,10 +63,17 @@ sudo python3 get-pip.py
 ```shell
 pip3 install opencv-python==3.4.6.27 -i https://piwheels.org/simple
 pip3 install numpy -i https://www.piwheels.org/simple
+pip3 install scipy -i https://www.piwheels.org/simple
 pip3 install  flask pyocr
 ```
 
 ## 数独システムの起動
+
+はじめに`git`コマンドをインストールします。
+
+```
+sudo apt install git
+```
 
 `git clone`コマンドで数独システムをダウンロードします。
 
