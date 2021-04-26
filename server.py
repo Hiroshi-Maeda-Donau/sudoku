@@ -3,12 +3,15 @@
 # 2020.9.13 ヒント適用機能追加
 # 2021.1.30 問題作成フロー更新その他
 # prog.html追加と関連変更
+# 2021.4.11 数独問題画像の処理（進捗画面）
+# 2021.4.30 進捗標示追加
 
 from flask import Flask, render_template, Response, redirect
 import numpy as np
 import time
 import cv2
 import numpy as np
+import json
 
 from convert_web import *	# 撮影した画像を9X9に分割
 from ocr_web import *		# 分割した画像を数字として読み取る
@@ -26,8 +29,10 @@ flag_apply=0			# ヒント適用フラグ
 flag_hint_before=0		# 一つ前のヒントフラグ
 lvnum=1				#問題作成レベル
 flag_ind=0			# 0=解答は表示しない、1=表示する
-crtime="作成所要時間=0:00:00"	# 問題作成所要時間"
+crtime="作成所要時間=00:00:00"	# 問題作成所要時間"
 qmin=0				# 問題カラム数
+cell_number=1			# 分割表示画面番号
+xstr="0"			# OCRの途中結果
 
 # 三次元配列初期化
 W1h=np.zeros(shape=[9,9,9],dtype='int')     # CubeMaskTemp用
@@ -168,31 +173,37 @@ def index():
 @app.route('/start-squat')
 def start_squat():
     global cap  #************************
-    # カメラの読み込み
-    cap=cv2.VideoCapture(0)
-    print("カメラ読み込み")#**************************************
-
+    global flag_conv
+    if flag_conv==1:
+        flag_conv=0
+        # カメラの読み込み
+        cap=cv2.VideoCapture(0)
+        print("カメラ読み込み")#**************************************
+        flag_conv=1
     # クライアントに squat.html を返す
     return render_template('squat.html')
 
 # /finish-squat にアクセスがあれば実行する
 @app.route('/finish-squat')
 def finish_squat():
+    global flag_conv:
+    if flag_conv==1:
+        flag_conv=0
+        # 画像を保存
+        print("画像を保存")#***************************************
+        ret,frame=cap.read()
 
-    # 画像を保存
-    print("画像を保存")#***************************************
-    ret,frame=cap.read()
+        while ret==False:
+            pass
 
-    while ret==False:
-        pass
+        cv2.imwrite('./templates/sudoku.png',frame)
 
-    cv2.imwrite('sudoku.png',frame)
+        # カメラ切り離し
+        print("カメラ切り離し")#**********************************
 
-    # カメラ切り離し
-    print("カメラ切り離し")#**********************************
-
-    cap.release()		# maybe not necessary
-    cv2.destroyAllWindows()
+        cap.release()		# maybe not necessary
+        cv2.destroyAllWindows()
+        flag_conv=1
 
     # ホーム画面に遷移させる
     return redirect('/')
@@ -222,6 +233,50 @@ def camera():
     return Response(gen(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
+# /camera2.mjpeg にアクセスがあれば実行する  数独画像
+@app.route('/camera2.mjpeg')
+def camera2():
+    def gen():
+        frame=cv2.imread('./templates/sudoku.png')
+        ret, jpeg = cv2.imencode('.jpg', frame)
+
+        yield (b'--frame\n'
+            b'Content-Type: image/jpeg\n\n' + jpeg.tobytes() + b'\n\n')
+
+    # クライアントにbufを配信
+    return Response(gen(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+# /camera3.mjpeg にアクセスがあれば実行する　　分割画像
+@app.route('/camera3.mjpeg')
+def camera3():
+    def gen():
+        while True:
+            global cell_number
+            frame=cv2.imread('./raw_img/{}.png'.format(cell_number))
+            ret, jpeg = cv2.imencode('.jpg', frame)
+
+            yield (b'--frame\n'
+                b'Content-Type: image/jpeg\n\n' + jpeg.tobytes() + b'\n\n')
+
+    # クライアントにbufを配信
+    return Response(gen(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
+
+# /temp_data にアクセスがあれば実行する　　分割画像
+@app.route('/temp_data')
+def temp_data():
+    global cell_number
+    global xstr
+
+    while True:
+        print("cell_number=",cell_number,"xstr=",xstr)	#********************
+        #f=open("./templates/q_temp2.txt","r")
+        #xlines=f.readlines()
+        #f.close()
+        return Response('data:%s\n\n' % xstr, 
+               mimetype = "text/event-stream")
+
 # 画面表示切り替え
 @app.route('/cind')
 def cind():
@@ -232,8 +287,6 @@ def cind():
         flag_ind=0
 
     return redirect('/')
-
-
 
 # /c-right にアクセスがあれば実行する
 @app.route('/c-right')
@@ -388,35 +441,69 @@ def b_mscrl():
 @app.route('/convocr')
 def convocr():
     global flag_conv
-    #flg=flag_read()	#汎用フラッグ
+    flag_conv=1
+    return render_template('anaimage.html')
+
+@app.route('/cstart2')
+def cstart2():
+    global flag_conv
+ 
     if flag_conv==1:
-        flag_conv=0	# 二度押しできないようにする
+        flag_conv=0        # 二度押しできないようにする
+
         # 回答配列の初期化
         WY=np.zeros(shape=[9,9],dtype='int')
         np.savetxt('q_answer.txt',WY)
         # 9x9=81マスに分ける
-        main_conv()	# convert_web.py
-        #結果の取得
-        msg=msg_read()
-        if msg=="ok":
-            # 数字を読みとる
-            main_ocr()	# ocr_web.py
-            # メッセージ更新
-            msg="画像読み取り完了しました！"
-            msg_update(msg)
-        else:
-            # メッセージ更新
-            msg="もう一度撮影してください！"
-            msg_update(msg)
-        flag_conv=1
+        currentdata=main_conv()	# convert_web.py
 
-    # ホーム画面に遷移させる
-    return redirect('/')
+    return render_template('anaimage2.html')
+
+@app.route('/cstart3')
+def cstart3():
+     global cell_number
+     cell_number=1
+     global flag_conv
+     global xstr
+     xstr="0"
+
+     #結果の取得
+     msg=msg_read()
+     if msg=="ok":
+          # 数字を読みとる
+          currentdata=main_ocr()	# ocr_web.py
+          for xstr in main_ocr():
+               #print("xstr=",xstr)	#************************
+               if cell_number<81:
+                   cell_number=cell_number+1
+
+          f=open("./templates/q_temp2.txt","r")
+          lines=f.readlines()
+          f.close()
+
+          # メッセージ更新
+          msg="画像読み取り完了しました！"
+          msg_update(msg)
+
+          flag_conv=1
+
+          return render_template('anaimage3.html' , lines=lines)
+
+     else:
+          # メッセージ更新
+          msg="もう一度撮影してください！"
+          msg_update(msg)
+
+          flag_conv=1
+
+          # ホーム画面に遷移させる
+          return redirect('/')
 
 # /solve（問題を解く!) にアクセスがあれば実行する
 @app.route('/solve')
 def solve():
     global flag_conv
+    global flag_ind
     if flag_conv==1:
         flag_conv=0        # 二度押しできないようにする
         # 数独問題をファイルから読む
@@ -427,30 +514,16 @@ def solve():
 
         msg_update(msg)
         flag_conv=1
+        flag_ind=1
     # ホーム画面に遷移させる
     return redirect('/')
 
 # /create（問題を作る!) にアクセスがあれば実行する
 @app.route('/create')
 def create():
-    global flag_conv
     global lvnum	# level number
-    #flg=flag_read()     #汎用フラッグ
-    #print("flag_conv=",flag_conv)	#***************************
-
-    #flag_conv=1
-    if flag_conv==1:
-        flag_conv=0        # 二度押しできないようにする
-        #Qtemp,Qans,msg=s_create_main(lvnum) # import s_create_web2.py
-
-        #np.savetxt('q_temp.txt',Qtemp)
-        #Qzero=np.zeros(shape=[9,9],dtype='int')
-        #np.savetxt('q_answer.txt',Qans)
-        #msg_update(msg)
-        flag_conv=1
 
     qlv=str(lvnum)
-    #clvl="作成レベル："+str(lvnum)
     # 作成画面に遷移させる
     return render_template('prog.html',qlv=qlv)
 
@@ -461,10 +534,7 @@ def cstart():
     global lvnum        # level number
     global crtime
     global qmin
-    #flg=flag_read()     #汎用フラッグ
-    #print("flag_conv=",flag_conv)      #***************************
 
-    #flag_conv=1
     if flag_conv==1:
         flag_conv=0        # 二度押しできないようにする
         lv2=lvnum
@@ -477,7 +547,7 @@ def cstart():
         msg_update(msg)
         flag_conv=1
         mn=str(dt3)
-        crtime="作成所要時間="+mn[0:7]
+        crtime="作成所要時間="+mn
 
     # index.html画面に遷移させる
     return redirect('/')
@@ -553,6 +623,7 @@ def qsave_ovw():
 @app.route('/qload')
 def qload():
     global flag_conv
+    global flag_ind
     if flag_conv==1:
         flag_conv=0        # 二度押しできないようにする
 
@@ -572,6 +643,7 @@ def qload():
         msg_update(mess)
 
         flag_conv=1
+        flag_ind=0
 
         # ホーム画面に遷移させる
         return redirect('/')
@@ -630,11 +702,6 @@ def b_hint():
     global W1h,W1h2,W2h,W3h,W3hx,W3hy,W4h,W4h2,Wcore,Wmask
     global flag_hint_before
 
-    print("flag_apply=",flag_apply)	#*************************
-    print("flag_hint=",flag_hint)	#*************************
-    print("flag_hint_before=",flag_hint_before)	#****************
-    print("flag_hidden=",flag_hidden)	#**************************
-
     sfig=np.zeros(shape=[3,3],dtype='int')
     for i in range(3):
         for j in range(3):
@@ -671,25 +738,16 @@ def b_hint():
 
     if flag_hint==2:			# 座席予約のコアノードを表示
         flgind,W4h,W1h=IndMask(W3h)
-        #print("flgind=",flgind)	#*****************************
-        #print("W4h")	#**************************************
-        #print(W4h)	#*************************************
 
     if flag_hint==3 and flag_hidden==0:	# N国同盟（行）
         W3hx=kcw(W3h)
         W3hy=jcw(W3hx)
         mode="ALI-L"
         ext,Wcore,Wmask=AliMask(flag_core,W3hy,mode)
-        #print("ext=",ext)	#****************************************
-        #if ext==1:
         W4h2=jccw(Wcore)
         W4h=kccw(W4h2)
         W1h2=jccw(Wmask)
         W1h=kccw(W1h2)
-        #print("CORE")	#**************************************
-        #print(W4h)		#**********************************
-        #print("W1h")	#**************************************
-        #print(W1h)		#*************************************
 
     if flag_hint==4 and flag_hidden==0:	# N国同盟（列）
         W3hx=jcw(W3h)
@@ -704,7 +762,6 @@ def b_hint():
         W3hy=jcw(W3hx)
         mode="ALI-B"
         ext,Wcore,Wmask=AliMask(flag_core,W3hy,mode)
-        #if ext==1:
         W4h2=jccw(Wcore)
         W4h=b_to_c(W4h2)
         W1h2=jccw(Wmask)
@@ -721,7 +778,6 @@ def b_hint():
     if flag_hint==4 and flag_hidden==1:    # 隠れN国同盟（列）
         mode="ALI-HR"
         ext,Wcore,Wmask=AliMask(flag_core,W3h,mode)
-        #if ext==1:
         W4h=Wcore
         W1h=Wmask
 
@@ -729,7 +785,6 @@ def b_hint():
         W3hx=c_to_b(W3h)
         mode="ALI-HB"
         ext,Wcore,Wmask=AliMask(flag_core,W3hx,mode)
-        #if ext==1:
         W4h=b_to_c(Wcore)
         W1h=b_to_c(Wmask)
 
@@ -737,7 +792,6 @@ def b_hint():
         W3hx=icw(W3h)
         mode="SQ-L"
         ext,Wcore,Wmask=AliMask(flag_core,W3hx,mode)
-        #if ext==1:
         W4h=iccw(Wcore)
         W1h=iccw(Wmask)
 
@@ -746,7 +800,6 @@ def b_hint():
         W3hy=jcw(W3hx)
         mode="SQ-R"
         ext,Wcore,Wmask=AliMask(flag_core,W3hy,mode)
-        #if ext==1:
         W4h2=jccw(Wcore)
         W4h=iccw(W4h2)
         W1h2=jccw(Wmask)
@@ -756,7 +809,6 @@ def b_hint():
         mode="ST-LOOP"
         ctrl="1"
         ext,ext2,Wmask,Wcore=ChnMaskSt(ctrl,W3h)
-        #if ext==1:
         W4h=chconv(ext2,Wcore)
         W1h=Wmask
 
@@ -764,13 +816,11 @@ def b_hint():
         mode="WK-LOOP"
         ctrl="1"
         ext,ext2,Wmask,Wcore=ChnMaskWk(ctrl,W3h)
-        #if ext==1:
         W4h=chconv(ext2,Wcore)
         W1h=Wmask
 
     if flag_apply==1 and flag_hint==flag_hint_before and flag_hint>0:	# ヒント適用処理
         ext2=merge(W3h,W1h)
-        #W4h=np.zeros(shape=[9,9,9],dtype='int')     # コア配列　最終型
         flag_apply=0
 
     flag_hint_before=flag_hint
@@ -903,7 +953,6 @@ def hintclr():
 
 
 if __name__ == '__main__':
-    # サーバーを起動
     app.run(
         host='localhost',
         debug=False,

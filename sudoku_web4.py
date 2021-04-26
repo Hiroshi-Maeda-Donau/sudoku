@@ -4,6 +4,7 @@
 #                               Rev.c  2020.7.16  独立宣言-->座席予約
 #                               Rev.d  2020.8.2   rotate関数変更、chconv関数追加
 #                               Rev.e  2020.9.14  ALIMask関数-sub3関数バグ改善
+#                               Rev.f  2021.3.18  解法の名称見直し、英語化
 
 import numpy as np
 
@@ -1539,7 +1540,8 @@ def s_web_main(level,QX):
                     if result_level<2:
                         result_level=2
                     #print("座席予約マスクあり********")
-                    message=message+" + 座席予約"
+                    #message=message+" + 座席予約"
+                    message=message+"+"+"SR"
 
                 else:
                     if level==2:	# レベル指定が座席予約までなら終了
@@ -1561,8 +1563,9 @@ def s_web_main(level,QX):
                                 if result_level<n+1:
                                     result_level=n+1
                                 #print("隠れ",n,"国同盟（列）")
-                                message=message+" + 隠れ"+str(n)+"国同盟（列）"
+                                #message=message+" + 隠れ"+str(n)+"国同盟（列）"
                                 #print("ALI-HR")	#**********************************
+                                message=message+"+H"+str(n)+"R"
                                 break
 
                             else:
@@ -1580,8 +1583,9 @@ def s_web_main(level,QX):
                                     if result_level<n+1:
                                         result_level=n+1
                                     #print(n,"国同盟（列）")
-                                    message=message+" + "+str(n)+"国同盟（列）"
+                                    #message=message+" + "+str(n)+"国同盟（列）"
                                     #print("ALI-R")	#**********************************
+                                    message=message+"+"+str(n)+"R"
                                     break
 
                                 else:
@@ -1598,8 +1602,9 @@ def s_web_main(level,QX):
                                         if result_level<n+1:
                                             result_level=n+1
                                         #print("隠れ",n,"国同盟（行）")
-                                        message=message+" + 隠れ"+str(n)+"国同盟（行）"
+                                        #message=message+" + 隠れ"+str(n)+"国同盟（行）"
                                         #print("ALI-HL")	#******************************
+                                        message=message+"+H"+str(n)+"L"
                                         break
 
                                     else:
@@ -1621,8 +1626,9 @@ def s_web_main(level,QX):
                                             if result_level<n+1:
                                                 result_level=n+1
                                             #print(n,"国同盟（行）")
-                                            message=message+" + "+str(n)+"国同盟（行）"
+                                            #message=message+" + "+str(n)+"国同盟（行）"
                                             #print("ALI-L")	#****************************
+                                            message=message+"+"+str(n)+"L"
                                             break
 
                                         else:
@@ -1638,8 +1644,9 @@ def s_web_main(level,QX):
                                                 if result_level<n+1:
                                                     result_level=n+1
                                                 #print("隠れ",n,"国同盟（ブロック）")
-                                                message=message+" + 隠れ"+str(n)+"国同盟(ブロック）"
+                                                #message=message+" + 隠れ"+str(n)+"国同盟(ブロック）"
                                                 #print("ALI-HB")
+                                                message=message+"+H"+str(n)+"B"
                                                 break
 
                                             else:
@@ -1659,8 +1666,9 @@ def s_web_main(level,QX):
                                                     if result_level<n+1:
                                                         result_level=n+1
                                                     #print(n,"国同盟（ブロック）")
-                                                    message=message+" + "+str(n)+"国同盟（ブロック）"
+                                                    #message=message+" + "+str(n)+"国同盟（ブロック）"
                                                     #print("ALI-B")	#*********************
+                                                    message=message+"+"+str(n)+"B"
                                                     break
 
                                                 else:
@@ -1677,8 +1685,9 @@ def s_web_main(level,QX):
                                                         if result_level<n+1:
                                                             result_level=n+1
                                                         #print("四辺形の定理（行）",n,"X",n)
-                                                        message=message+" + "+"四辺形の定理（行）"+str(n)+"X"+str(n)
+                                                        #message=message+" + "+"四辺形の定理（行）"+str(n)+"X"+str(n)
                                                         #print("SQ-L")	#******************
+                                                        message=message+"+"+str(n)+"X"+str(n)+"L"
                                                         break
                                                     else:
 
@@ -1697,8 +1706,9 @@ def s_web_main(level,QX):
                                                             if result_level<n+1:
                                                                 result_level=n+1
                                                             #print("四辺形の定理（列）",n,"X",n)
-                                                            message=message+" + "+"四辺形の定理(列）"+str(n)+"X"+str(n)
+                                                            #message=message+" + "+"四辺形の定理(列）"+str(n)+"X"+str(n)
                                                             #print("SQ-R")	#***************
+                                                            message=message+"+"+str(n)+"X"+str(n)+"R"
                                                             break
                                                         else:
                                                             n=n+1
@@ -1730,7 +1740,8 @@ def s_web_main(level,QX):
                                 if result_level<7:
                                     result_level=7
                                 #print("●＝○ー○＝○ー○＝● ループ発見")
-                                message=message+" + "+"強リンクループ"
+                                #message=message+" + "+"強リンクループ"
+                                message=message+"+"+"Strong Link Loop"
 
                             else:
                                 #print("弱リンクループによる解法")
@@ -1741,7 +1752,8 @@ def s_web_main(level,QX):
                                     if result_level<7:
                                         result_level=7
                                     #print("●ー○＝○ー○＝○ー● ループ発見")
-                                    message=message+" + "+"弱リンクループ"
+                                    #message=message+" + "+"弱リンクループ"
+                                    message=message+"+"+"Weak Link Loop"
 
                                 else:
                                     break

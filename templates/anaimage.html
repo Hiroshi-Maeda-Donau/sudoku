@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <!--
+       <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+       -->
+       <title>Raspberry Pi</title>
+   </head>
+   <style>
+       table {
+           position: absolute;
+           text-align: top;
+           margin-top: 60px;
+           margin-left: 250px;
+           border-collapse: collapse;
+       }
+       td {
+           width: 30px;
+           height: 30px;
+           border: solid 1px;
+       }
+   </style>
+
+   <body bgcolor = "#CCFF99">
+       <h2 style="position: absolute; left:340px; top:0px;";><font color="blue">OCR結果</font></h2>
+       <div>
+            <table id="dotTBL"></table>
+       </div>
+       <!-- プログレスバー表示準備-->
+       <div id="indprg"></div>
+
+       <!-- 撮影済み画像標示-->
+       <div style="position: absolute; top:20px; left:10px ">
+            <h4><font color="blue">撮影した画像</font></h4>
+            <img id="camera2" src="/camera2.mjpeg" width="190" height="190">
+       </div>
+
+
+       <!--元に戻るbutton -->
+       <div id="rethome">
+           <input type="button" style="position: absolute; right: 20px; bottom: 20px; background-color:orange;" value="元に戻る"  onclick="location.href='/'" >
+       </div>
+
+       <!--画像解析開始button-->
+       <div id="stbtn">
+           <input type="button" style="position: absolute; left: 300px; bottom: 20px; font-size: 12pt; background-color:yellow; " value="読み取り開始！" onclick="progbarInd()" >
+       </div>
+
+       <script>
+
+       window.onload = function() { //HTMLが読み込まれると働く関数
+
+           dotTable();          //数独問題テーブル
+           clearcell();
+
+       };      
+
+       var Matrix_Rows = 9;
+       var Matrix_Cols = 9;
+
+       var dotTbl = document.getElementById("dotTBL");//数独問題テーブル
+
+       //dotTbl.rows[4].cells[4].style.backgroundColor = "yellow";
+
+       //読み取った数独問題を標示するテーブルを用意する
+       function dotTable() {
+           for(var i=0; i<Matrix_Rows; i++) {
+               var row = dotTbl.insertRow(-1); //行を追加する　-1の指定で最後の行として追加される
+               for(var j=0; j<Matrix_Cols; j++) {
+                   var cell = row.insertCell(-1); //その行にセル(列)を追加する
+                   cell.innerHTML = " ";
+               };
+           };
+       };
+
+       //全てのセルを白色にする
+       function clearcell(){
+           for ( var i=0 ; i<Matrix_Rows ; i++){
+               for ( var j=0 ; j<Matrix_Cols ; j++){
+                 dotTbl.rows[i].cells[j].style.backgroundColor = "white";
+               };
+           };
+       };
+
+       function rpt(){
+           var rand_row = Math.floor(Math.random()*9);
+           var rand_cell = Math.floor(Math.random()*9);
+           clearcell();
+           dotTbl.rows[rand_row].cells[rand_cell].style.backgroundColor = "orange";
+       };
+
+
+       function progbarInd(){
+           var retHm=document.getElementById("rethome");
+           var pDiv=document.getElementById("indprg");
+           var stb=document.getElementById("stbtn");
+           retHm.innerHTML="<div></div>";
+           pDiv.innerHTML="<progress  style='position: absolute; left: 300px; bottom: 20px;'>0%</progress>";
+           stb.innerHTML="<div></div>";
+
+           //var dotTbl = document.getElementById("dotTBL");//数独問題テーブル
+
+           setInterval("rpt()",100);
+
+           window.location.href='/cstart2';
+
+       };
+
+       </script>
+   </body>
+</html>
+
+

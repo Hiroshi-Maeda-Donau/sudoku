@@ -27,6 +27,7 @@ def main_ocr():
     # 9X9の表作成
     WX=np.zeros(shape=[9,9],dtype='int')
     #WX=np.zeros(shape=[9,9],dtype='unicode')
+    rstr=""
 
     for x in range(9):
         for y in range(9):
@@ -51,13 +52,21 @@ def main_ocr():
             #print("カラム番号",z,"=",end="")	#******************************
 
             if num<20000:
+                rstr=rstr+"0"
                 print("カラム番号",z,"=空欄")	#*****************************************
+
+                # for anaimage.html
+                #f=open("./templates/q_temp2.txt", "w")
+                #f.write(rstr)
+                #f.close 
+
+                yield rstr
 
             else:
 
                 # 画像の前処理を実行
                 text = tool.image_to_string(
-                Image.open("raw_img/{}.png".format(z)),
+                Image.open("./raw_img/{}.png".format(z)),
                 lang=lang,
                 # builder=pyocr.builders.DigitBuilder()
                 #6 = Assume a single uniform block of text.
@@ -69,9 +78,23 @@ def main_ocr():
                 # 表入力
                 if text=='1' or text=='2' or text=='3' or text=='4' or text=='5' or text=='6' or text=='7' or text=='8' or text=='9':
                     WX[x,y]=text
+                    rstr=rstr+str(text)
                     print("カラム番号",z,"=",text)	#************************************
                 else:
-                    print("カラム番号",z,"=不明") 
+                    print("カラム番号",z,"=不明")
+                    rstr=rstr+"0"
 
-    print(WX)
-    np.savetxt('q_temp.txt' , WX)#**********************************
+                # for anaimage.html
+                #f=open("./templates/q_temp2.txt", "w")
+                #f.write(rstr)
+                #f.close 
+
+                yield rstr
+
+    f=open("./templates/q_temp2.txt", "w")
+    f.write(rstr)
+    f.close 
+
+    #print(WX)
+    np.savetxt('q_temp.txt' , WX)
+

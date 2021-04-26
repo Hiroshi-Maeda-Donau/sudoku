@@ -19,6 +19,7 @@
 # web4d16 update 2021.3.3    focus to one pattern in level-3 or higher
 # web4d17 update 2021.3.5    modify sun_check with Winhi again
 # web4d18 update 2021.3.8    improve scan ratio
+# web4d19 update 2021.3.17   change print message from Japanese to English 
 
 import datetime
 import random
@@ -1491,7 +1492,7 @@ def getBase(lvl_seed,lvl_mini,Wtruef,Wfalsef,Winhif,Wcoref,Wtargf,Cfacef,CondTab
         if synm_side==1:
             #print("l0*")	#********************
             qnum=np.sum(Wtruef)
-            if qnum>33:
+            if qnum>40:
                 #print("l01*")	#********************
                 break
 
@@ -1502,19 +1503,9 @@ def getBase(lvl_seed,lvl_mini,Wtruef,Wfalsef,Winhif,Wcoref,Wtargf,Cfacef,CondTab
 
                 flg_comp,fcomp,flag_Wt1,Qfinal,res_lvl,mess=lmax_check(lvl_mini,Wtruef)
 
-                dt2=datetime.datetime.now()
-                dt3=dt2-dt1
-                crtime=str(dt3)
-                a=crtime.find(":")
-                dth=crtime[0:a]
-                dtm=crtime[a+1:a+3]
-                dts=crtime[a+4:a+6]
-                crtime2=dth+":"+dtm+":"+dts
                 cnt_total=cnta2*20+cntb+1
-                time_total=int(dth)*3600+int(dtm)*60+int(dts)
-                crate=time_total/cnt_total
-                crate2=str(crate)
-                crate3=crate2[0:5]
+                crtime2,crate3=getPastTime(dt1,cnt_total)
+
                 print("cnta2=",cnta2,"cntb=",cntb,"total count=",cnt_total,"rate=",crate3)
                 print("fcomp=",fcomp,"result level=",res_lvl,"qnum=",qnum,"time=",crtime2)
 
@@ -1683,7 +1674,7 @@ def getFinal_1(dt1,cnty):
                 if qnum<20:
                     pass
 
-                elif qnum>32:
+                elif qnum>40:
                     break
 
                 else:
@@ -1694,19 +1685,8 @@ def getFinal_1(dt1,cnty):
                     Wsave5f=csave(Wfalsef)
                     Wsave6f=csave(Wtruef)
 
-                    dt2=datetime.datetime.now()
-                    dt3=dt2-dt1
-                    crtime=str(dt3)
-                    a=crtime.find(":")
-                    dth=crtime[0:a]
-                    dtm=crtime[a+1:a+3]
-                    dts=crtime[a+4:a+6]
-                    crtime2=dth+":"+dtm+":"+dts
-                    cnt_total=cntz+1
-                    time_total=int(dth)*3600+int(dtm)*60+int(dts)
-                    crate=time_total/cnt_total
-                    crate2=str(crate)
-                    crate3=crate2[0:5]
+                    cnt=cntz+1
+                    crtime2,crate3=getPastTime(dt1,cnt)
 
                     print("cntz=",cntz,"rate=",crate3,"fcomp=",fcomp,"qnum=",qnum,"time=",crtime2)
 
@@ -1768,16 +1748,19 @@ def s_create_main(lvl_seed,lvl_mini):
                 print(Qfinal)
 
                 print("CondTable=",CondTable2)
-                dt2=datetime.datetime.now()
-                dt3=dt2-dt1
-                print("作成所要時間=",dt3)
+
+                cnt=1
+                crtime2,crate3=getPastTime(dt1,cnt)
+
+                print("already completed after seeding!")
+                print("target level=",lvl_seed,"time=",crtime2)
 
                 np.savetxt("q_answer.txt",Qfinal)
 
-                return Qmini,qmin,Qfinal,mess,dt3
+                return Qmini,qmin,Qfinal,mess,crtime2
 
             else:       # go to getBase
-
+ 
                 # generate link table for getFinal
                 ctr_LT3,LT3=lt_gen(Wtrues,Wfalses,Winhi2)
 
@@ -1814,21 +1797,12 @@ def s_create_main(lvl_seed,lvl_mini):
                         print(Qfinal)
 
                         print("CondTable=",CondTable2)
-                        dt2=datetime.datetime.now()
-                        dt3=dt2-dt1
-                        crtime=str(dt3)
-                        a=crtime.find(":")
-                        dth=crtime[0:a]
-                        dtm=crtime[a+1:a+3]
-                        dts=crtime[a+4:a+6]
-                        crtime2=dth+":"+dtm+":"+dts
+
                         cnt_total=cnta2*20+cntb+1
-                        time_total=int(dth)*3600+int(dtm)*60+int(dts)
-                        crate=time_total/cnt_total
-                        crate2=str(crate)
-                        crate3=crate2[0:5]
+                        crtime2,crate3=getPastTime(dt1,cnt_total)
+
                         print("cnta2=",cnta2,"cntb=",cntb,"total count=",cnt_total,"rate=",crate3)
-                        print("fcomp=",fcomp,"result level=",res_lvl,"qnum=",qnum1,"time=",crtime2)
+                        print("target level=",lvl_seed,"time=",crtime2)
 
                         np.savetxt("q_answer.txt",Qfinal)
 
@@ -1841,7 +1815,9 @@ def s_create_main(lvl_seed,lvl_mini):
                 #print("after end of cntb loop") #*********************
                 cnta2=cnta2+1
 
-            # cnta loop last  
+            # cnta loop last
+
+        #after cnta loop
 
     else:       # level-1
 
@@ -1862,37 +1838,30 @@ def s_create_main(lvl_seed,lvl_mini):
                 print(Qmini)
 
                 print("fixed column=",qnum,"-->",qmin)
-
                 print(mess)
 
                 print("Qfinal")
                 print(Qfinal)
 
-                print("cnty=",cnty)     #********************
-                dt2=datetime.datetime.now()
-                dt3=dt2-dt1
-                crtime=str(dt3)
-                a=crtime.find(":")
-                dth=crtime[0:a]
-                dtm=crtime[a+1:a+3]
-                dts=crtime[a+4:a+6]
-                crtime2=dth+":"+dtm+":"+dts
-                time_total=int(dth)*3600+int(dtm)*60+int(dts)
-                print("fcomp=",fcomp,"qnum=",qmin,"time=",crtime2)
+                cnt=1
+                crtime2,crate3=getPastTime(dt1,cnt)
+                print("time=",crtime2)
 
                 np.savetxt("q_answer.txt",Qfinal)
 
                 return Qmini,qmin,Qfinal,mess,crtime2
 
-    dt2=datetime.datetime.now()
-    dt3=dt2-dt1
-    print("所要時間=",dt3)
+
+    cnt=1
+    crtime2,crate3=getPastTime(dt1,cnt)
+    print("time=",crtime2)
+    print("所要時間=",crtimer2)
     print("問題作成失敗しました")
     Qmini=np.zeros(shape=[9,9],dtype='int')
     Qfinal=np.zeros(shape=[9,9],dtype='int')
     mess="問題作成失敗しました"
     qmin=0
-    return Qmini,qmin,Qfinal,mess,dt3
+    return Qmini,qmin,Qfinal,mess,crtime2
 
 def getMini(lvl,Q1):
 
@@ -1919,4 +1888,30 @@ def getMini(lvl,Q1):
                 qmin=qmin+1
 
     return Q2,qmin
+
+def getPastTime(dt1,cnt):
+
+    dt2=datetime.datetime.now()
+    dt3=dt2-dt1
+    crtime=str(dt3)
+    a=crtime.find(":")
+
+    if a>2:
+        b=crtime.find("d")
+        dth_day=crtime[0:b]
+        dth_hour=crtime[a-2:a]
+    else:
+        dth_day=0
+        dth_hour=crtime[0:a]
+
+    dth=str(int(dth_day)*24+int(dth_hour))
+    dtm=crtime[a+1:a+3]
+    dts=crtime[a+4:a+6]
+    crtime2=dth+":"+dtm+":"+dts
+    time_total=int(dth)*3600+int(dtm)*60+int(dts)
+    crate=time_total/cnt
+    crate2=str(crate)
+    crate3=crate2[0:5]
+
+    return crtime2,crate3
 

@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+   <head>
+       <meta charset="UTF-8">
+       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <!--
+       <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+       -->
+       <title>Raspberry Pi</title>
+   </head>
+   <style>
+       table {
+           position: absolute;
+           text-align: top;
+           margin-top: 60px;
+           margin-left: 250px;
+           border-collapse: collapse;
+       }
+       td {
+           width: 30px;
+           height: 30px;
+           border: solid 1px;
+       }
+   </style>
+
+   <body bgcolor="#CCFF99">
+       <h2 style="position: absolute; left:340px; top:0px;";><font color="blue">OCR結果</font></h2>
+       <div>
+            <table id="dotTBL"></table>
+       </div>
+
+       <!-- 撮影済み画像標示-->
+       <div style="position: absolute; top:20px; left:10px ">
+            <h4><font color="blue">撮影した画像</font></h4>
+            <img id="camera2" src="/camera2.mjpeg" width="190" height="190">
+       </div>
+
+       <!-- データ受け取り-->
+       <h4 id="disp"  style="display:none">{{lines}}</h4>
+
+       <!--元に戻るbutton -->
+       <div id="rethome">
+           <input type="button" style="position: absolute; right: 20px; bottom: 20px; background-color:orange;" value="元に戻る"  onclick="location.href='/'" >
+       </div>
+
+       <script>
+       window.onload = function() { //HTMLが読み込まれると働く関数
+           dotTable();          //数独問題テーブル
+           EventSource.close();
+       };      
+
+       var Matrix_Rows = 9;
+       var Matrix_Cols = 9;
+
+       var dotTbl = document.getElementById("dotTBL");//数独問題テーブル
+       var qstr=document.getElementById("disp");//数独問題読み取りデータ
+       var qstr2=qstr.textContent;
+       
+       //数独問題を標示するテーブルを用意する
+       function dotTable() {
+           for(var i=0; i<Matrix_Rows; i++) {
+               var row = dotTbl.insertRow(-1); //行を追加する　-1の指定で最後の行として追加される
+               for(var j=0; j<Matrix_Cols; j++) {
+                   var cell = row.insertCell(-1); //その行にセル(列)を追加する
+                   var cell_fig=qstr2.substr(i*9+j+2,1);
+                   cell.style.backgroundColor = "red";
+                   cell.style.textAlign = "center";
+                   cell.style.color = "white";
+                   if( cell_fig == "0") {
+                       cell.innerHTML=" ";
+                   }
+                   else {
+                       cell.innerHTML=cell_fig;
+                   } 
+               };
+           };
+       };
+
+       </script>
+   </body>
+</html>
+
+

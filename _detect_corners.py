@@ -97,8 +97,9 @@ def gen_score_mat():
     cell = np.maximum(cell_a, cell_b)
     return np.tile(cell, (9, 9))
 
-SCALE = 0.7
+# SCALE = 0.7
 def get_get_fit_score(img, x):
+    SCALE = 0.7
     # 入力リサイズ
     img = cv2.resize(img, (int(img.shape[1] * SCALE), int(img.shape[0] * SCALE)), interpolation=cv2.INTER_AREA)
     img_size = (img.shape[0] * img.shape[1]) ** 0.5
@@ -138,21 +139,21 @@ def get_get_fit_score(img, x):
     return get_fit_score
 
 def convex_poly_fitted(img, show=True):
-    print("convex_poly_fitted")#**************************
-    print("convex_poly")
+    print("convex_poly_fitted")	#**************************
+    print("convex_poly")	#*************************
     polies = convex_poly(img, False)
     # 結果読み取り
     msg=msg_read()
-    #print("msg1=",msg)#**********************************
+    #print("msg(c_p_f)=",msg)	#**********************************
     if msg=="ok":
         print("select corners")	#**********************************
         poly = select_corners(img, polies)
-        print("poly.flatten")#****************************************
+        print("poly.flatten")	#****************************************
         x0 = poly.flatten()
         get_fit_score = get_get_fit_score(img, poly)
-        print("get_fit_score")#******************************
+        print("get_fit_score")	#******************************
         ret = basinhopping(get_fit_score, x0, T=0.1, niter=250, stepsize=3)
-        print("basinhopping")#*******************************************
+        print("basinhopping")	#*******************************************
         return ret.x.reshape(4, 2), ret.fun
     else:
         #print("msg2=",msg)#*****************************************

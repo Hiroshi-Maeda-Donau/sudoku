@@ -12,18 +12,23 @@
 
 - 数独問題を雑誌や新聞からカメラで取り込む
 - 数独問題を画面から入力する
+- 数独問題を自動で作成する
 
 数独問題を解く:
 
 - 自動で問題を解く
-- 問題のヒントを出す
+- 問題のヒントを見ながら手動で解いていく
 
 ## インストール手順
 
-数独システムを動かすために必要なライブラリのインストール手順です。Raspberry Pi 3B+の使用を前提としています。
+数独システムを動かすために必要なライブラリのインストール手順です。  
+＜前提条件＞  
+- Raspberry Pi 3B+の使用。  
+- 数独システムの組み立てが終わり（[装置のセットアップ](./docs/setup.md)参照）、PCとのSSH接続が完了していること。
 
-### 必要なライブラリのインストール
-
+### 必要なライブラリのインストール  
+#### Visual Studio Codeで数独システムとSSH接続を行い、ターミナルから下記の作業を行ってください。  
+作業するディレクトリー名は自由です。  
 はじめに、パッケージマネージャを更新します。
 
 ```shell
@@ -33,7 +38,7 @@ sudo apt-get update
 OCR用のソフトウェアをインストールします。
 
 ```shell
-sudo apt-get -y install tesseract
+sudo apt-get -y install tesseract-ocr
 ```
 
 OpenCVの依存ライブラリをインストールします。
@@ -64,9 +69,17 @@ sudo python3 get-pip.py
 pip3 install opencv-python==3.4.6.27 -i https://piwheels.org/simple
 pip3 install numpy -i https://www.piwheels.org/simple
 pip3 install  flask pyocr
+pip3 install scipy -i https://www.piwheels.org/simple
 ```
 
-## 数独システムの起動
+## 数独システムのインストール
+
+はじめに`git`コマンドをインストールします。
+
+```
+sudo apt install git
+```
+
 
 `git clone`コマンドで数独システムをダウンロードします。
 
@@ -75,14 +88,28 @@ git clone https://github.com/Hiroshi-Maeda-Donau/sudoku.git
 cd sudoku/
 ```
 
-数独システムを起動します。
+## 自動起動の設定と解除
+
+別資料にある『[自動起動の設定](./docs/automation.md)』を実施してください。
+
+上記が完了したら下記を入力して数独システムを起動します。数独システムの電源を切って再投入しても同じです。
 
 ```shell
-python3 server.py
+sudo reboot
 ```
 
-サーバーが立ち上がったら、ブラウザのURL欄にRaspberry PiのIPアドレス（または、ホストネーム）を入力してアプリケーションを開きます。
+LCDに冒頭の基本画面が表示されたら完了です。  
 
+自動立ち上げを解除したいときは下記のようにターミナルから入力してください。
+```shell
+sudo systemctl disable daily-squat.service
+```
+またVScodeのターミナルから操作ができるようになります。  
+再度自動起動の設定を行いたい場合は、下記のコマンドだけでOKです。　　
+```shell
+sudo systemctl daemon-reload
+sudo systemctl enable daily-squat.service
+```
 ## 詳細情報
 
 装置の組み立て方や数独システムの使い方など、詳しい情報はこちらを確認してください。
@@ -90,6 +117,7 @@ python3 server.py
 - [装置のセットアップ](./docs/setup.md)
 - [システムの使い方1](./docs/usage.md)
 - [システムの使い方2](./docs/usage2.md)
+- [カメラでの撮影のコツ](./docs/usage3.md)
 - [自動起動の設定](./docs/automation.md)
 - [開発情報](./docs/development.md)
 - [数独システムのアルゴリズム](./docs/algorithm.md)
@@ -98,9 +126,6 @@ python3 server.py
 
 - 本システムはデアゴスティーニの*もっと本気で学ぶIOT*講座で提供されたデバイス、ソフトウェアをベースに私が開発したものです。
 - コードについては講座で提供されたものを私が改造したもの、ネットから入手したものを私が改造したもの、私が独自に開発したものが混在しています。
-- カメラで撮影した画像の読み取りはまだ完璧ではなく、下記のような問題があります。
-    1. 明るい照明の元でないと数独問題の画像読み取りに失敗する場合が多い（もう一度撮影して下さい、というメッセージが出ます）。
-    2. 読み取り成功してもデジタル化の成功率が低い（現在70%ぐらいです。間違えたマスは手入力で修正する必要があります）。
 - 本システムはPC自体に移植することはそれほど難しくないと思いますが、私はやっていません。LCDパネルなどの投資が必要ないので自信のある方はお試しください。
 
 ## 開発者

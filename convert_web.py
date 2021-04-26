@@ -1,14 +1,9 @@
 #Hough+dilation+rosion
 # for import
 import cv2
-#import numpy as np
-#from matplotlib import pyplot as plt
 from _detect_corners import *
 from _trim_board import *
 from server import *
-#import itertools
-#import math
-#from scipy.optimize import basinhopping
 
 def show_fitted(img, x):
     cntr = np.int32(x.reshape((4, 2)))
@@ -28,14 +23,12 @@ def split_image(img, x, y, line):
             counter += 1
             clp = img[ (h*(split_y-1))+line_h:(h*(split_y))-line_h, (w*(split_x-1))+line_w:(w*(split_x))-line_w]
             cv2.imwrite("./raw_img/{}.png".format(counter), clp)
-            #print("カラム=",counter)#************************************
-    #counter = 0
     return counter
 
 
 #if __name__ == "__main__":
 def main_conv():
-    raw_img = cv2.imread("./sudoku.png")
+    raw_img = cv2.imread("./templates/sudoku.png")
     fit_img = fit_size(raw_img, 500, 500)
 
     print("枠線検出開始")
@@ -51,31 +44,28 @@ def main_conv():
 
     # 二値化(閾値100を超えた画素を255にする。)
     # ret,gray2 = cv2.threshold(gray, threshold, 255, cv2.THRESH_BINARY)
-
 # 試行範囲****************************************************⬆️
 
     polies = convex_poly(fit_img, False)#original
     print("枠検出終了")	#***********************************
 
-    # polies = convex_poly(gray2, False)#*****************test
-
     # 枠検出の結果チェック
     msg=msg_read()
-    #print("msg3=",msg)#****************************************
+    print("msg3=",msg)#****************************************
 
     if msg=="ok":
         poly = select_corners(fit_img, polies)
         print("select corners")	#*********************
         msg=msg_read()
-        #print("msg=",msg)#******************************
+        print("msg2=",msg)#******************************
         if msg=="ok":
             x0 = poly.flatten()
             img = show_fitted(fit_img, x0)
             print("convex_poly_fitted")	#************
             rect, score = convex_poly_fitted(img)
-            #print("convex_poly_fittedの後")#************
+            print("convex_poly_fittedの後")#************
             msg=msg_read()
-            #print("msg2=",msg)#*************************
+            print("msg=",msg)#*************************
             if msg=="ok":
 
                 print("画像トリム中")
@@ -121,12 +111,18 @@ def main_conv():
 
                 fimg=no_lines_img
 
-                split_image(fimg, 9, 9, 0)
+                currentdata=split_image(fimg, 9, 9, 0)
+
             else:
+                currentdata=0
                 print("no part1")#********************
 
         else:
+            currentdata=0
             print("no part2")#*************************
 
     else:
+        currentdata=0
         print("msg=",msg)
+
+    return currentdata

@@ -11,7 +11,20 @@
       <br>
       <br>
       <br>      
-      <h3 style="position: absolute; left: 200px"; top: 100px"><font color="white">作成する問題のレベル</font></h3>
+      <h3 style="position: absolute; left: 200px; top: 100px"><font color="white">作成する問題のレベル</font></h3>
+
+      <!-- 現在時刻表示 -->
+      <h3 style="position: absolute; left: 200px; top: 300px"><font color="yellow">現在時間</font></h3>
+      <h2 id="presentTime" style="position: absolute; left: 350px; top: 300px"><font color="white">00:00:00</font></h2>
+
+      <!-- 開始時間表示 -->
+      <h3 style="position: absolute; left: 200px; top: 350px"><font color="yellow">開始時間</font></h3>
+      <h2 id="startTime" style="position: absolute; left: 350px; top: 350px"><font color="white">00:00:00</font></h2>
+
+      <!-- 経過時間表示 -->
+      <h3 style="position: absolute; left: 200px; top: 400px"><font color="yellow">経過時間（分）</font></h3>
+      <h2 id="pastTime" style="position: absolute; left: 350px; top: 400px"><font color="white">00:00:00</font></h2>
+
 
       <!-- 問題作成レベル表示 -->
       <h3 style="position: absolute; left: 260px; top: 130px; font-size: 16pt "><font color="white">{{qlv}}</font></h3>
@@ -31,15 +44,45 @@
       </div>  
 
        <!--作成開始button -->
-       <input type="button" style="position: absolute; left: 200px; top: 250px; font-size: 12pt; background-color:red; " value="作成開始！" onclick="progbarInd()" >
+       <div id="stmkg">
+        <input type="button" style="position: absolute; left: 200px; top: 250px; font-size: 12pt; background-color:orange; " value="作成開始！" onclick="progbarInd()" >
+       </div>
 
        <script>
+           var now1=new Date('2021/03/31 10:00:00');
+           var st=document.getElementById("startTime");
+           st.style.color="white";
+           var pt1=document.getElementById("presentTime");
+           pt1.style.color="yellow";
+           var pt2=document.getElementById("pastTime");
+           pt2.style.color="red";
+           pt2.style.textAlign="right";
+
+           function xtime(){
+               var now2= new Date();
+               var prTime=now2.toLocaleTimeString();
+               pt1.innerHTML=prTime;
+
+               var diff=now2.getTime()-now1.getTime();
+               var paTime=Math.floor(diff/(60*1000));
+               pt2.innerHTML=paTime;
+           }
+           
            function progbarInd(){
                var retHm=document.getElementById("rethome");
                var pDiv=document.getElementById("indprg");
-               retHm.innerHTML="<div></div>"
-               pDiv.innerHTML="<progress  style='position: absolute; left: 200px; top: 300px;'>0%</progress>";
-               window.location.href='/cstart'
+               //var stbtn=document.getElementById("stmkg");
+               retHm.innerHTML="<div></div>";
+               pDiv.innerHTML="<progress  style='position: absolute; left: 350px; top: 250px;'>0%</progress>";
+               //stbtn.innerHTML=<div></div>;
+               now1 = new Date();
+               sTime=now1.toLocaleTimeString();
+               st.innerHTML=sTime;
+
+               xtime();
+               setInterval("xtime()", 1000);
+
+               window.location.href='/cstart';
            }
        </script>
  
