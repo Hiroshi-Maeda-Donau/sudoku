@@ -186,7 +186,7 @@ def start_squat():
 # /finish-squat にアクセスがあれば実行する
 @app.route('/finish-squat')
 def finish_squat():
-    global flag_conv:
+    global flag_conv
     if flag_conv==1:
         flag_conv=0
         # 画像を保存
